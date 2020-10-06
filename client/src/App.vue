@@ -1,10 +1,27 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view />
+  <router-view v-if="user" />
+  <LoginView v-else />
 </template>
+
+<script lang="ts">
+import { defineComponent, computed } from 'vue';
+import { useStore } from './store';
+import LoginView from './views/Login.vue';
+
+export default defineComponent({
+  components: {
+    LoginView
+  },
+  setup() {
+    const store = useStore();
+    const user = computed(() => store.state.app.user);
+
+    return {
+      user
+    };
+  }
+});
+</script>
 
 <style lang="scss">
 #app {

@@ -1,8 +1,16 @@
-import { createStore } from 'vuex';
+import { createStore, useStore as useVuexStore } from 'vuex';
 
-export default createStore({
-  state: {},
-  mutations: {},
-  actions: {},
-  modules: {}
+import app, { State as AppState } from './modules/app';
+export { Actions as UserActions } from './modules/app/actions';
+
+export type RootState = {};
+
+type CombinedState = RootState & { app: AppState };
+
+export default createStore<CombinedState>({
+  modules: {
+    app
+  }
 });
+
+export const useStore = () => useVuexStore<CombinedState>();
