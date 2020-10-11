@@ -1,6 +1,5 @@
 <template>
-  <router-view v-if="user" />
-  <LoginView v-else />
+  <router-view />
 </template>
 
 <script lang="ts">
