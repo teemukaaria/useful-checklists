@@ -11,6 +11,7 @@
         </router-link>
       </li>
     </ul>
+    <p v-if="user">Logged in as {{ user.id }}</p>
     <button v-if="user" @click="handleLogoutClick">Logout</button>
     <button v-if="!user" @click="handleLoginClick">Login</button>
     <button v-if="!user" @click="handleSignUpClick">Sign Up</button>

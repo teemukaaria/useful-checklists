@@ -76,7 +76,14 @@ export default defineComponent({
       .auth()
       .signInWithEmailAndPassword(form.email, form.password)
       .then(data => {
-        store.dispatch(UserActions.LOGIN);
+        
+        if (data == null || data.user == null) {
+          return;
+        }
+
+        const name = data.user.displayName != null ? data.user.displayName : data.user.email;
+
+        store.dispatch(UserActions.LOGIN, name);
         router.replace('/')
       })
       .catch(err => {

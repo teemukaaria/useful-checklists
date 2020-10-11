@@ -8,7 +8,8 @@ type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
     key: K,
     payload: Parameters<Mutations[K]>[1]
-  ): ReturnType<Mutations[K]>;
+  ): ReturnType<Mutations[K]>,
+  user: String;
 } & Omit<ActionContext<State, RootState>, 'commit'>;
 
 enum ActionTypes {
@@ -27,8 +28,8 @@ export default {
   [Actions.LOGOUT]({ commit }) {
     commit(Mutations.SET_USER, null);
   },
-  [Actions.LOGIN]({ commit }) {
+  [Actions.LOGIN]({ commit }: any, user: string) {
     // TODO
-    commit(Mutations.SET_USER, { id: '' });
+    commit(Mutations.SET_USER, { id: user });
   }
 } as ActionTree<State, RootState> & Actions;
