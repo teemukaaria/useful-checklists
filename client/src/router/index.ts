@@ -1,4 +1,11 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import {
+  createRouter as create,
+  createWebHistory,
+  RouteRecordRaw
+} from 'vue-router';
+
+import { Store } from '@/store';
+import { watchEffect } from 'vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -38,9 +45,29 @@ const routes: Array<RouteRecordRaw> = [
   }
 ];
 
-const router = createRouter({
+const router = create({
   history: createWebHistory(process.env.BASE_URL),
   routes
 });
+
+export const createRouter = (store: Store) => {
+  router.beforeEach((to, from, next) => {
+    const { user } = store.state.app;
+    if (user === null && to.path !== '/login' && to.path !== '/register')
+      return next('/login');
+    next();
+  });
+
+  watchEffect(() => {
+    if (
+      store.state.app.user === null &&
+      router.currentRoute.value.path !== '/login' &&
+      router.currentRoute.value.path !== '/register'
+    )
+      router.replace('/login');
+  });
+
+  return router;
+};
 
 export default router;

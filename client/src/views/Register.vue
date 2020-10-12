@@ -5,7 +5,7 @@
         <div class="card">
           <div>Sign up</div>
           <div>
-            <div v-if="error">{{error.message}}</div>
+            <div v-if="error">{{ error.message }}</div>
             <form action="#" @submit.prevent="handleSignUpClick">
               <div>
                 <label for="name">Name</label>
@@ -96,40 +96,47 @@ import firebase from 'firebase';
 import { defineComponent, reactive } from 'vue';
 import { useStore, UserActions } from '@/store';
 import router from '../router';
+import { convertUserIn } from '@/utils/store.utils';
 
 export default defineComponent({
-  
   setup() {
     const signupForm = reactive({
-      name: "",
-      username: "",
-      email: "",
-      password: "",
-      password2: ""
+      name: '',
+      username: '',
+      email: '',
+      password: '',
+      password2: ''
     });
     const error = reactive({ message: null });
     const store = useStore();
     const handleSignUpClick = () => {
       if (signupForm.password !== signupForm.password2) {
-        error.message = "Passwords mismatch." as any;
+        error.message = 'Passwords mismatch.' as any;
       } else {
         firebase
-        .auth()
-        .createUserWithEmailAndPassword(signupForm.email, signupForm.password)
-        .then(data => {
-          if (data != null && data.user != null) {
-            data.user
-            .updateProfile({
-              displayName: signupForm.name
-            })
-            .then(() => {
-              router.replace('/');
-            });
-          }
-        })
-        .catch(err => {
-          error.message = err.message;
-        });
+          .auth()
+          .createUserWithEmailAndPassword(signupForm.email, signupForm.password)
+          .then(data => {
+            if (data != null && data.user != null) {
+              data.user
+                .updateProfile({
+                  displayName: signupForm.name
+                })
+                .then(() => {
+                  store.dispatch(
+                    UserActions.LOGIN,
+                    convertUserIn({
+                      ...data.user,
+                      displayName: signupForm.name
+                    } as firebase.User)
+                  );
+                  router.replace('/');
+                });
+            }
+          })
+          .catch(err => {
+            error.message = err.message;
+          });
       }
     };
 
@@ -140,5 +147,4 @@ export default defineComponent({
     };
   }
 });
-
 </script>

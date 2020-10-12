@@ -5,7 +5,7 @@
         <div>
           <div>Login</div>
           <div>
-            <div v-if="error">{{error.message}}</div>
+            <div v-if="error">{{ error.message }}</div>
             <form action="#" @submit.prevent="handleLoginClick">
               <div>
                 <label for="email">Email</label>
@@ -54,41 +54,33 @@
 import firebase from 'firebase';
 import { defineComponent, reactive } from 'vue';
 import { useStore, UserActions } from '@/store';
-import router from '../router';
+import { useRouter } from 'vue-router';
+import { convertUserIn } from '@/utils/store.utils';
 
 export default defineComponent({
-  
   setup() {
     const form = reactive({
-      email: "",
-      password: ""
-    });
-    const signupForm = reactive({
-      name: "",
-      username: "",
-      email: "",
-      password: "",
-      password2: ""
+      email: '',
+      password: ''
     });
     const error = reactive({ message: null });
     const store = useStore();
-    const handleLoginClick = () => firebase
-      .auth()
-      .signInWithEmailAndPassword(form.email, form.password)
-      .then(data => {
-        
-        if (data == null || data.user == null) {
-          return;
-        }
+    const router = useRouter();
+    const handleLoginClick = () =>
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(form.email, form.password)
+        .then(data => {
+          if (data == null || data.user == null) {
+            return;
+          }
 
-        const name = data.user.displayName != null ? data.user.displayName : data.user.email;
-
-        store.dispatch(UserActions.LOGIN, name);
-        router.replace('/')
-      })
-      .catch(err => {
-        error.message = err.message;
-      });
+          store.dispatch(UserActions.LOGIN, convertUserIn(data.user));
+          router.replace('/');
+        })
+        .catch(err => {
+          error.message = err.message;
+        });
     const handleSignUpClick = () => {
       router.replace('/register');
     };
@@ -97,9 +89,8 @@ export default defineComponent({
       form,
       error,
       handleLoginClick,
-      handleSignUpClick,
+      handleSignUpClick
     };
   }
 });
-
 </script>
