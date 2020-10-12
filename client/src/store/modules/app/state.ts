@@ -1,5 +1,7 @@
 export interface User {
   id: string;
+  name: string;
+  registered: Date;
 }
 
 export interface State {

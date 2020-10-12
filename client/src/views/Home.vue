@@ -11,19 +11,18 @@
         </router-link>
       </li>
     </ul>
-    <p v-if="user">Logged in as {{ user.id }}</p>
+    <p v-if="user">Logged in as {{ user.name }}</p>
     <button v-if="user" @click="handleLogoutClick">Logout</button>
-    <button v-if="!user" @click="handleLoginClick">Login</button>
-    <button v-if="!user" @click="handleSignUpClick">Sign Up</button>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue';
+import { useRouter } from 'vue-router';
+import firebase from 'firebase';
+
 import CategoryList from '@/components/home/CategoryList.vue'; // @ is an alias to /src
 import { useStore, UserActions } from '@/store';
-import router from '../router';
-import firebase from 'firebase';
 
 export default defineComponent({
   name: 'Home',
@@ -32,14 +31,18 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const handleLogoutClick = () => {
       firebase
         .auth()
         .signOut()
-        .then(() => store.dispatch(UserActions.LOGOUT))
+        .then(() => {
+          store.dispatch(UserActions.LOGOUT, undefined);
+          router.replace('/login');
+        })
         .catch(() => {});
-    }
+    };
 
     const user = computed(() => store.state.app.user);
 
