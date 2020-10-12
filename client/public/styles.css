@@ -1,0 +1,22 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-background);
+  font-size: var(--font-size-text);
+}
+
+h2 {
+  font-size: var(--font-size-large);
+  font-weight: bold;
+}
+
+h6 {
+  font-size: var(--font-size-large);
+  font-weight: bold;
+}

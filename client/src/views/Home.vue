@@ -1,7 +1,13 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <CategoryList :categories="categories" />
+    <div class="section">
+      <h2 v-if="inProgress.length > 0">In progress</h2>
+      <in-progress-list :checklists="inProgress" />
+    </div>
+    <div class="section">
+      <h2>Explore checklists</h2>
+      <category-list :categories="categories" />
+    </div>
     <router-link to="/profile">Account</router-link>
     <router-link to="/checklist/create">Create checklist</router-link>
     <ul>
@@ -17,21 +23,38 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import firebase from 'firebase';
 
-import CategoryList from '@/components/home/CategoryList.vue'; // @ is an alias to /src
-import { useStore, UserActions } from '@/store';
+import InProgressList from '@/components/home/InProgressList.vue';
+import CategoryList from '@/components/home/CategoryList.vue';
+import { useStore, UserActions, ContentActions } from '@/store';
 
 export default defineComponent({
   name: 'Home',
   components: {
-    CategoryList
+    CategoryList,
+    InProgressList
   },
   setup() {
     const store = useStore();
     const router = useRouter();
+
+    const user = computed(() => store.state.app.user);
+    const categories = computed(() =>
+      Object.values(store.state.content.categoriesById)
+    );
+    const inProgress = computed(() =>
+      Object.values(store.state.content.inProgressById)
+    );
+
+    onMounted(() => {
+      if (user.value) {
+        store.dispatch(ContentActions.FETCH_CATEGORIES, undefined);
+        store.dispatch(ContentActions.FETCH_IN_PROGRESS, undefined);
+      }
+    });
 
     const handleLogoutClick = () => {
       firebase
@@ -43,8 +66,6 @@ export default defineComponent({
         })
         .catch(() => {});
     };
-
-    const user = computed(() => store.state.app.user);
 
     const handleLoginClick = () => {
       router.push('/login');
@@ -59,7 +80,8 @@ export default defineComponent({
       handleLogoutClick,
       handleLoginClick,
       handleSignUpClick,
-      categories: [1, 2, 3],
+      categories,
+      inProgress,
       checklists: [1, 2, 3]
     };
   }
@@ -67,6 +89,20 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.home {
+  width: 100%;
+}
+
+h2 {
+  margin-bottom: 8px;
+}
+
+.section {
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+}
+
 button,
 a {
   display: block;

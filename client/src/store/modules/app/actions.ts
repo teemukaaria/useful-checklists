@@ -1,7 +1,7 @@
 import { ActionTree, ActionContext } from 'vuex';
 import { createModuleActions } from '@/store/utils';
 import { State, User } from './state';
-import { RootState } from '@/store';
+import { CombinedState } from '@/store';
 import { Mutations } from './mutations';
 
 type AugmentedActionContext = {
@@ -9,7 +9,7 @@ type AugmentedActionContext = {
     key: K,
     payload: Parameters<Mutations[K]>[1]
   ): ReturnType<Mutations[K]>;
-} & Omit<ActionContext<State, RootState>, 'commit'>;
+} & Omit<ActionContext<State, CombinedState>, 'commit'>;
 
 enum ActionTypes {
   LOGOUT = 'LOGOUT',
@@ -30,4 +30,4 @@ export default {
   [Actions.LOGIN]({ commit }, user: User) {
     commit(Mutations.SET_USER, user);
   }
-} as ActionTree<State, RootState> & ActionsInterface;
+} as ActionTree<State, CombinedState> & ActionsInterface;

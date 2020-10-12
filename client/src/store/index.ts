@@ -9,11 +9,18 @@ import app, { State as AppState } from './modules/app';
 import { ActionsInterface as AppActionsInterface } from './modules/app/actions';
 export { Actions as UserActions } from './modules/app/actions';
 
+import content, { State as ContentState } from './modules/content';
+import { ActionsInterface as ContentActionsInterface } from './modules/content/actions';
+export { Actions as ContentActions } from './modules/content/actions';
+
 export type RootState = {};
 
-type CombinedState = RootState & { app: AppState };
+export type CombinedState = RootState & {
+  app: AppState;
+  content: ContentState;
+};
 
-type CombinedActions = AppActionsInterface;
+type CombinedActions = AppActionsInterface & ContentActionsInterface;
 
 // NOTE: Commits shoudn't be used outside of actions -> type error if tryig to commit
 export type Store = Omit<VuexStore<CombinedState>, 'dispatch' | 'commit'> & {
@@ -26,7 +33,8 @@ export type Store = Omit<VuexStore<CombinedState>, 'dispatch' | 'commit'> & {
 
 export default createStore<CombinedState>({
   modules: {
-    app
+    app,
+    content
   }
 }) as Store;
 

@@ -1,38 +1,50 @@
 <template>
-  <ul>
-    <li v-for="category in categories" :key="category">
-      <router-link :to="`/category/${category}`">
-        Category {{ category }}
-      </router-link>
-    </li>
-  </ul>
+  <div class="wrapper">
+    <router-link
+      v-for="category in categories"
+      :key="category.id"
+      :to="`/category/${category.id}`"
+    >
+      <category-card :category="category" />
+    </router-link>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 
+import CategoryCard from './CategoryCard.vue';
+import { Category } from '@/store/modules/content/state';
+
 export default defineComponent({
   name: 'CategoryList',
+  components: {
+    CategoryCard
+  },
   props: {
-    categories: Array.of(String)
+    categories: {
+      type: Array as () => Category[],
+      required: true
+    }
   }
 });
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 h3 {
   margin: 40px 0 0;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+
+  a {
+    text-decoration: none;
+
+    &:not(:last-child) {
+      margin-bottom: 8px;
+    }
+  }
 }
 </style>
