@@ -1,0 +1,11 @@
+body {
+  /* COLORS */
+  --color-text: white;
+  --color-background: black;
+  --color-background-card: #666;
+
+  /* FONTS */
+  --font-size-small: 12px;
+  --font-size-text: 14px;
+  --font-size-large: 16px;
+}
