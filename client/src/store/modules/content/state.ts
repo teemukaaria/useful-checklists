@@ -7,6 +7,19 @@ export interface Category {
   highlights: string[];
 }
 
+export interface Checklist {
+  id: string;
+  category: string;
+  collaborators: string[];
+  description: string;
+  item_count: number;
+  likes: number;
+  name: string;
+  original: string;
+  owner: string;
+  privat: boolean;
+}
+
 export interface InProgress {
   id: string;
   user: string;
@@ -21,9 +34,13 @@ export interface InProgress {
 export interface State {
   categoriesById: { [id: string]: Category };
   inProgressById: { [id: string]: InProgress };
+  currentCategory: Category;
+  checklistsById: { [id: string]: Checklist };
 }
 
 export default {
   categoriesById: {},
-  inProgressById: {}
+  inProgressById: {},
+  currentCategory: {},
+  checklistsById: {}
 } as State;
