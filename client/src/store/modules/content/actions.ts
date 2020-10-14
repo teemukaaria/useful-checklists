@@ -25,12 +25,19 @@ export const Actions = createModuleActions('CONTENT', ActionTypes);
 export interface ActionsInterface {
   [Actions.FETCH_CATEGORIES](context: AugmentedActionContext): void;
   [Actions.FETCH_IN_PROGRESS](context: AugmentedActionContext): void;
-  [Actions.FETCH_CATEGORY_BY_ID](context: AugmentedActionContext, id: string): void;
-  [Actions.FETCH_CHECKLISTS_FOR_CATEGORY](context: AugmentedActionContext, category: string): void;
+  [Actions.FETCH_CATEGORY_BY_ID](
+    context: AugmentedActionContext,
+    id: string
+  ): void;
+  [Actions.FETCH_CHECKLISTS_FOR_CATEGORY](
+    context: AugmentedActionContext,
+    category: string
+  ): void;
 }
 
 export default {
   async [Actions.FETCH_CATEGORIES]({ commit }) {
+    commit(Mutations.SET_LOADING, 'categories');
     const categories = {} as { [id: string]: Category };
     await firebase
       .firestore()
@@ -42,9 +49,10 @@ export default {
             (categories[doc.id] = { ...doc.data(), id: doc.id } as Category)
         )
       );
-    commit(Mutations.SET_CATEGORIES, categories);
+    commit(Mutations.SET_CONTENT, { key: 'categories', content: categories });
   },
   async [Actions.FETCH_IN_PROGRESS]({ commit, rootState }) {
+    commit(Mutations.SET_LOADING, 'inProgress');
     const { user } = rootState.app;
     const inProgress = {} as { [id: string]: InProgress };
     await firebase
@@ -58,7 +66,7 @@ export default {
             (inProgress[doc.id] = { ...doc.data(), id: doc.id } as InProgress)
         )
       );
-    commit(Mutations.SET_IN_PROGRESS, inProgress);
+    commit(Mutations.SET_CONTENT, { key: 'inProgress', content: inProgress });
   },
   async [Actions.FETCH_CATEGORY_BY_ID]({ commit }, id: string) {
     await firebase
@@ -68,13 +76,17 @@ export default {
       .get()
       .then(doc => {
         if (doc.exists) {
-          commit(Mutations.SET_CURRENT_CATEGORY, doc.data() as Category);
+          commit(Mutations.ADD_CONTENT, {
+            key: 'categories',
+            content: { [doc.id]: doc.data() as Category }
+          });
         } else {
-          console.log("Could not find category for id: " + id);
+          console.log('Could not find category for id: ' + id);
         }
       });
   },
   async [Actions.FETCH_CHECKLISTS_FOR_CATEGORY]({ commit }, category: string) {
+    commit(Mutations.SET_LOADING, 'checklists');
     const checklists = {} as { [id: string]: Checklist };
     await firebase
       .firestore()
@@ -83,11 +95,10 @@ export default {
       .get()
       .then(snapshot =>
         snapshot.forEach(
-          doc => 
+          doc =>
             (checklists[doc.id] = { ...doc.data(), id: doc.id } as Checklist)
         )
       );
-    commit(Mutations.SET_CHECKLISTS_FOR_CATEGORY, checklists);
-  },
-
+    commit(Mutations.SET_CONTENT, { key: 'checklists', content: checklists });
+  }
 } as ActionTree<State, CombinedState> & ActionsInterface;

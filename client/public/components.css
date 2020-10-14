@@ -1,0 +1,38 @@
+.card {
+  background: var(--color-background-card);
+  border-radius: var(--border-radius-card);
+  color: var(--color-text);
+  padding: var(--spacing-2);
+}
+.card.card--colored {
+  position: relative;
+  background: none;
+}
+.card.card--colored::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  /* make sure --color is defined */
+  background: var(--color);
+  z-index: -1;
+  border-radius: var(--border-radius-card);
+  opacity: 0.2;
+}
+
+.pimple {
+  height: var(--font-size-large);
+  width: var(--font-size-large);
+  border-radius: 100%;
+  /* make sure --color is defined */
+  background: var(--color);
+}
+
+.icon {
+  color: var(--color-text);
+  padding: 3px;
+  height: var(--size-icon);
+  width: var(--size-icon);
+}

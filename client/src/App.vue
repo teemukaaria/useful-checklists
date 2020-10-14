@@ -1,15 +1,20 @@
-<template>
-  <router-view v-if="user !== undefined" />
+<template v-if="user !== undefined">
+  <app-bar />
+  <router-view />
 </template>
 
 <script lang="ts">
 import { defineComponent, computed, onMounted } from 'vue';
 import firebase from 'firebase';
 
+import AppBar from '@/components/app/AppBar.vue';
 import { useStore, UserActions } from './store';
 import { convertUserIn } from './utils/store.utils';
 
 export default defineComponent({
+  components: {
+    AppBar
+  },
   setup() {
     const store = useStore();
     const user = computed(() => store.state.app.user);
@@ -32,12 +37,13 @@ export default defineComponent({
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Asap, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--color-text);
-  max-width: 360px;
+  max-width: 420px;
   padding: 16px;
+  padding-top: 0;
   margin: auto;
   min-height: 100vh;
   display: flex;

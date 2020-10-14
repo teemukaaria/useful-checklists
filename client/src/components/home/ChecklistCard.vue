@@ -1,5 +1,5 @@
 <template>
-  <div class="checklist-card" :style="{ '--color': color }">
+  <div class="checklist-card card" :style="{ '--color': color }">
     <span class="bar">
       <div class="pimple" />
     </span>
@@ -32,12 +32,9 @@ export default defineComponent({
   position: relative;
   flex-direction: column;
   text-decoration: none;
-  color: var(--color-text);
-  background: var(--color-background-card);
-  border-radius: 8px;
-  padding: 8px;
-  width: 150px;
-  height: 130px;
+  padding-bottom: var(--spacing-1);
+  width: 160px;
+  height: 160px;
 
   .bar {
     display: flex;
@@ -45,14 +42,6 @@ export default defineComponent({
     justify-content: flex-end;
     margin-bottom: 8px;
     flex: 1;
-
-    .pimple {
-      height: calc(var(--font-size-large) - 2px);
-      width: calc(var(--font-size-large) - 2px);
-      margin: 2px;
-      border-radius: 100%;
-      background: var(--color);
-    }
   }
 
   .name {
@@ -63,7 +52,8 @@ export default defineComponent({
   .progress {
     align-self: flex-end;
     font-size: var(--font-size-small);
-    opacity: 0.7;
+    font-weight: 500;
+    opacity: 0.5;
   }
 }
 </style>
