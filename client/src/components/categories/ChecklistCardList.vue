@@ -5,7 +5,7 @@
       :key="checklist.id"
       :to="`/checklist/${checklist.id}`"
     >
-      <checklist-card :checklist="checklist" />
+      <checklist-card :checklist="checklist" :color="color"/>
     </router-link>
   </div>
 </template>
@@ -25,7 +25,8 @@ export default defineComponent({
     checklists: {
       type: Array as () => Checklist[],
       required: true
-    }
+    },
+    color: String
   }
 });
 </script>
@@ -43,7 +44,7 @@ h3 {
     text-decoration: none;
 
     &:not(:last-child) {
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
   }
 }

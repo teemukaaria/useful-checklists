@@ -1,24 +1,27 @@
 <template>
   <div class="category-card" :style="{ '--color': category.color }">
     <span class="bar">
-      <h6>Name: {{ category.name }}</h6>
+      <h6>{{ category.name }}</h6>
       <div class="pimple" />
     </span>
-    <ul>
-      <li v-for="(highlight, i) in category.highlights" :key="i">
-        {{ highlight }}
-      </li>
-    </ul>
-    <span class="total">{{ category.list_count }} checklists</span>
+    <p v-if="category.description" class="description">{{ category.description }}</p>
+    <span class="bar">
+      <span class="total">{{ category.list_count }} checklists</span>
+      <primary-button text="contribute" />
+    </span>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Category } from '@/store/modules/content/state';
+import PrimaryButton from '@/components/general/PrimaryButton.vue';
 
 export default defineComponent({
   name: 'CategoryHeaderCard',
+  components: {
+    PrimaryButton
+  },
   props: {
     category: {
       type: Object as () => Category,
@@ -66,6 +69,20 @@ export default defineComponent({
       border-radius: 100%;
       background: var(--color);
     }
+
+    .total {
+      align-self: center;
+      font-size: var(--font-size-small);
+      font-weight: bold;
+      flex: auto;
+      color: var(--color);
+      opacity: 0.7;
+    }
+  }
+
+  .description {
+    font-size: var(--font-size-small);
+    margin-bottom: 8px;
   }
 
   ul {
@@ -77,16 +94,6 @@ export default defineComponent({
       opacity: 0.7;
     }
   }
-
-  .total {
-    align-self: flex-end;
-    font-size: var(--font-size-small);
-    font-weight: bold;
-
-    &::after {
-      content: ' \02192';
-      font-size: 22px;
-    }
-  }
+  
 }
 </style>

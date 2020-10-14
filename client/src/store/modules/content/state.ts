@@ -17,7 +17,7 @@ export interface Checklist {
   name: string;
   original: string;
   owner: string;
-  privat: boolean;
+  private: boolean;
 }
 
 export interface InProgress {

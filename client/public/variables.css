@@ -2,10 +2,15 @@ body {
   /* COLORS */
   --color-text: white;
   --color-background: black;
-  --color-background-card: #666;
+  --color-background-card: #1F1F1F;
+  --color-blue:  #15A9FF;
 
   /* FONTS */
   --font-size-small: 12px;
   --font-size-text: 14px;
   --font-size-large: 16px;
+
+  /* PRIMARY BUTTON */
+  --padding-vertical: 4px;
+  --padding-horizontal: 4px;
 }

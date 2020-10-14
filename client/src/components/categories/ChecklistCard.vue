@@ -1,11 +1,9 @@
 <template>
   <div class="checklist-card" :style="{ '--color': color }">
-    <span class="bar">
-      <div class="pimple" />
-    </span>
     <p class="name">{{ checklist.name }}</p>
-    <span class="progress">
-      {{ checklist.completed_count }} / {{ checklist.item_count }} done
+    <p class="description">{{ checklist.description }}</p>
+    <span class="bar">
+      <span class="steps">{{ checklist.item_count }} steps</span> • {{ checklist.collaborators.length }} contributors
     </span>
   </div>
 </template>
@@ -36,34 +34,24 @@ export default defineComponent({
   background: var(--color-background-card);
   border-radius: 8px;
   padding: 8px;
-  width: 150px;
-  height: 130px;
-
-  .bar {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    margin-bottom: 8px;
-    flex: 1;
-
-    .pimple {
-      height: calc(var(--font-size-large) - 2px);
-      width: calc(var(--font-size-large) - 2px);
-      margin: 2px;
-      border-radius: 100%;
-      background: var(--color);
-    }
-  }
 
   .name {
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
   }
 
-  .progress {
+  .description {
+    margin-bottom: 16px;
+  }
+
+  .bar {
     align-self: flex-end;
     font-size: var(--font-size-small);
     opacity: 0.7;
+
+    .steps {
+      color: var(--color);
+    }
   }
 }
 </style>

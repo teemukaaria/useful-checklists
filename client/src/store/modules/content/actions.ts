@@ -61,7 +61,6 @@ export default {
     commit(Mutations.SET_IN_PROGRESS, inProgress);
   },
   async [Actions.FETCH_CATEGORY_BY_ID]({ commit }, id: string) {
-    console.log('>>>>> ' + id);
     await firebase
       .firestore()
       .collection('categories')
@@ -69,7 +68,6 @@ export default {
       .get()
       .then(doc => {
         if (doc.exists) {
-          console.log(doc.data());
           commit(Mutations.SET_CURRENT_CATEGORY, doc.data() as Category);
         } else {
           console.log("Could not find category for id: " + id);
@@ -77,7 +75,6 @@ export default {
       });
   },
   async [Actions.FETCH_CHECKLISTS_FOR_CATEGORY]({ commit }, category: string) {
-    console.log('<<<<<< ' + category);
     const checklists = {} as { [id: string]: Checklist };
     await firebase
       .firestore()
@@ -90,7 +87,6 @@ export default {
             (checklists[doc.id] = { ...doc.data(), id: doc.id } as Checklist)
         )
       );
-    console.log(checklists);
     commit(Mutations.SET_CHECKLISTS_FOR_CATEGORY, checklists);
   },
 

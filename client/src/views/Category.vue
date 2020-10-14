@@ -1,7 +1,11 @@
 <template>
-  <div>
-    <category-header-card :category="category" />
-    <checklist-card-list :checklists="checklists"/>
+  <div class="home">
+    <div class="section">
+      <category-header-card :category="category" />
+    </div>
+    <div class="section">
+      <checklist-card-list :checklists="checklists" :color="category.color"/>
+    </div>
   </div>
 </template>
 
@@ -9,7 +13,6 @@
 import { computed, defineComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore, ContentActions } from '@/store';
-import { Category } from '@/store/modules/content/state';
 import CategoryHeaderCard from '@/components/categories/CategoryHeaderCard.vue';
 import ChecklistCardList from '@/components/categories/ChecklistCardList.vue';
 
@@ -33,12 +36,11 @@ export default defineComponent({
     );
 
     const category = computed(() =>
-      Object.values(store.state.content.currentCategory)
+      store.state.content.currentCategory
     );
 
     onMounted(() => {
       if (user.value) {
-        console.log(id);
         store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id as string);
         store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id as string);
       }
@@ -51,3 +53,17 @@ export default defineComponent({
   }
 });
 </script>
+
+<style lang="scss" scoped>
+.home {
+  width: 100%;
+
+  .section {
+    &:not(:last-child) {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+</style>
+
