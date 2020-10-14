@@ -1,3 +1,9 @@
+export type Content<T> = {
+  status?: 'loading' | 'done' | 'error';
+  error?: string;
+  byId: { [id: string]: T };
+};
+
 export interface Category {
   id: string;
   name: string;
@@ -32,15 +38,15 @@ export interface InProgress {
 }
 
 export interface State {
-  categoriesById: { [id: string]: Category };
-  inProgressById: { [id: string]: InProgress };
-  currentCategory: Category;
-  checklistsById: { [id: string]: Checklist };
+  categories: Content<Category>;
+  inProgress: Content<InProgress>;
+  // currentCategory: Category;
+  checklists: Content<Checklist>;
 }
 
 export default {
-  categoriesById: {},
-  inProgressById: {},
-  currentCategory: {},
-  checklistsById: {}
+  categories: { byId: {} },
+  inProgress: { byId: {} },
+  // currentCategory: {},
+  checklists: { byId: {} }
 } as State;

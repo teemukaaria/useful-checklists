@@ -1,6 +1,6 @@
 <template>
-  <button class="primary-button">
-      {{ text }}
+  <button class="primary-button card card--colored">
+    {{ text }}
   </button>
 </template>
 
@@ -10,22 +10,21 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'PrimaryButton',
   props: {
-    text: String,
+    text: String
   }
 });
 </script>
 
 <style lang="scss" scoped>
 .primary-button {
-  color: var(--color-text);
-  background: var(--color-blue);
-  border-radius: 100px;
-  padding-top: var(--padding-vertical);
-  padding-bottom: var(--padding-vertical);
-  padding-left: var(--padding-horizontal);
-  padding-right: var(--padding-horizontal);
+  color: var(--color, white);
+  border: none;
+  padding: var(--spacing-1) var(--spacing-2);
   font-weight: bold;
   text-transform: uppercase;
-  opacity: 0.7;
+
+  &::before {
+    opacity: 0.15;
+  }
 }
 </style>

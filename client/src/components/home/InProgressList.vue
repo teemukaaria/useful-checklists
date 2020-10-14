@@ -1,15 +1,21 @@
 <template>
   <div class="wrapper">
-    <router-link
-      v-for="checklist in checklists"
-      :key="checklist.id"
-      :to="`/checklist/${checklist.id}`"
-    >
-      <checklist-card
-        :checklist="checklist"
-        :color="categoriesById[checklist.category]?.color"
-      />
-    </router-link>
+    <template v-if="!loading">
+      <router-link
+        v-for="checklist in Object.values(checklists.byId)"
+        :key="checklist.id"
+        :to="`/checklist/${checklist.id}`"
+      >
+        <checklist-card
+          :checklist="checklist"
+          :color="categoriesById[checklist.category]?.color"
+        />
+      </router-link>
+    </template>
+    <template v-else>
+      <skeleton-card class=".skeleton" :height="160" :width="160" />
+      <skeleton-card class=".skeleton" :height="160" :width="160" />
+    </template>
   </div>
 </template>
 
@@ -17,24 +23,30 @@
 import { defineComponent, computed } from 'vue';
 
 import ChecklistCard from './ChecklistCard.vue';
-import { InProgress } from '@/store/modules/content/state';
+import SkeletonCard from '@/components/common/SkeletonCard.vue';
+import { InProgress, Content } from '@/store/modules/content/state';
 import { useStore } from '@/store';
 
 export default defineComponent({
   name: 'InProgressList',
   components: {
-    ChecklistCard
+    ChecklistCard,
+    SkeletonCard
   },
   props: {
     checklists: {
-      type: Array as () => InProgress[],
+      type: Object as () => Content<InProgress>,
       required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
   setup() {
     const store = useStore();
 
-    const categoriesById = computed(() => store.state.content.categoriesById);
+    const categoriesById = computed(() => store.state.content.categories.byId);
 
     return {
       categoriesById
@@ -44,19 +56,20 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-
 .wrapper {
   display: flex;
+  padding: 5px;
+  margin: -5px;
 
   a {
     text-decoration: none;
+  }
 
-    &:not(:last-child) {
-      margin-right: 8px;
-    }
+  & > * {
+    flex-shrink: 0;
+  }
+  & > *:not(:last-child) {
+    margin-right: var(--spacing-2);
   }
 }
 </style>

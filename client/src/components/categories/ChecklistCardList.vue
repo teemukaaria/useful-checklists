@@ -1,12 +1,19 @@
 <template>
   <div class="wrapper">
-    <router-link
-      v-for="checklist in checklists"
-      :key="checklist.id"
-      :to="`/checklist/${checklist.id}`"
-    >
-      <checklist-card :checklist="checklist" :color="color"/>
-    </router-link>
+    <template v-if="checklists.status !== 'loading'">
+      <router-link
+        v-for="checklist in Object.values(checklists.byId)"
+        :key="checklist.id"
+        :to="`/checklist/${checklist.id}`"
+      >
+        <checklist-card :checklist="checklist" :color="color" />
+      </router-link>
+    </template>
+    <template v-else>
+      <skeleton-card :height="120" />
+      <skeleton-card :height="120" />
+      <skeleton-card :height="120" />
+    </template>
   </div>
 </template>
 
@@ -14,38 +21,35 @@
 import { defineComponent } from 'vue';
 
 import ChecklistCard from './ChecklistCard.vue';
-import { Checklist } from '@/store/modules/content/state';
+import SkeletonCard from '@/components/common/SkeletonCard.vue';
+import { Checklist, Content } from '@/store/modules/content/state';
 
 export default defineComponent({
   name: 'ChecklistCardList',
   components: {
-    ChecklistCard
+    ChecklistCard,
+    SkeletonCard
   },
   props: {
     checklists: {
-      type: Array as () => Checklist[],
+      type: Object as () => Content<Checklist>,
       required: true
     },
-    color: String
+    color: { type: String, default: 'white' }
   }
 });
 </script>
 
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
 
   a {
     text-decoration: none;
-
-    &:not(:last-child) {
-      margin-bottom: 16px;
-    }
+  }
+  & > *:not(:last-child) {
+    margin-bottom: var(--spacing-2);
   }
 }
 </style>

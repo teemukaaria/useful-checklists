@@ -1,45 +1,54 @@
 import { createModuleActions } from '@/store/utils';
-import { State, Category, InProgress, Checklist } from './state';
+import { State } from './state';
 
 enum MutationTypes {
-  SET_CATEGORIES = 'SET_CATEGORIES',
-  SET_IN_PROGRESS = 'SET_IN_PROGRESS',
-  SET_CURRENT_CATEGORY = 'SET_CURRENT_CATEGORY',
-  SET_CHECKLISTS_FOR_CATEGORY = 'SET_CHECKLISTS_FOR_CATEGORY'
+  SET_CONTENT = 'SET_CONTENT',
+  SET_ERROR = 'SET_ERROR',
+  SET_LOADING = 'SET_LOADING',
+  ADD_CONTENT = 'ADD_CONTENT'
 }
 
 export const Mutations = createModuleActions('CONTENT', MutationTypes);
 
 export type Mutations = {
-  [Mutations.SET_CATEGORIES](
+  [Mutations.SET_LOADING](state: State, key: keyof State): void;
+  [Mutations.SET_ERROR]<T extends keyof State>(
     state: State,
-    payload: { [id: string]: Category }
+    payload: { key: T; error?: string }
   ): void;
-  [Mutations.SET_IN_PROGRESS](
+  [Mutations.SET_CONTENT]<T extends keyof State>(
     state: State,
-    payload: { [id: string]: InProgress }
+    payload: { key: T; content: State[T]['byId'] }
   ): void;
-  [Mutations.SET_CURRENT_CATEGORY](
+  [Mutations.ADD_CONTENT]<T extends keyof State>(
     state: State,
-    payload: Category
-  ): void;
-  [Mutations.SET_CHECKLISTS_FOR_CATEGORY](
-    state: State,
-    payload: { [id: string]: Checklist }
+    payload: { key: T; content: State[T]['byId'] }
   ): void;
 };
 
 export default {
-  [Mutations.SET_CATEGORIES]: (state, payload) => {
-    state.categoriesById = payload;
+  [Mutations.SET_LOADING]: (state, key) => {
+    state[key].status = 'loading';
   },
-  [Mutations.SET_IN_PROGRESS]: (state, payload) => {
-    state.inProgressById = payload;
+  [Mutations.SET_ERROR]: (state, payload) => {
+    state[payload.key] = {
+      ...state[payload.key],
+      status: 'error',
+      error: payload.error
+    };
   },
-  [Mutations.SET_CURRENT_CATEGORY]: (state, payload) => {
-    state.currentCategory = payload;
+  [Mutations.SET_CONTENT]: (state, { key, content }) => {
+    state[key] = {
+      ...state[key], // needed for typing
+      byId: content,
+      status: 'done',
+      error: undefined
+    };
   },
-  [Mutations.SET_CHECKLISTS_FOR_CATEGORY]: (state, payload) => {
-    state.checklistsById = payload;
+  [Mutations.ADD_CONTENT]: (state, { key, content }) => {
+    state[key] = {
+      ...state[key], // needed for typing
+      byId: { ...state[key].byId, ...content }
+    };
   }
 } as Mutations;

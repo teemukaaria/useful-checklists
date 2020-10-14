@@ -1,50 +1,62 @@
 <template>
   <div class="wrapper">
-    <router-link
-      v-for="category in categories"
-      :key="category.id"
-      :to="`/category/${category.id}`"
-    >
-      <category-card :category="category" />
-    </router-link>
+    <template v-if="count === 0 && categories.status === 'loading'">
+      <skeleton-card class=".skeleton" :height="198" />
+      <skeleton-card class=".skeleton" :height="198" />
+      <skeleton-card class=".skeleton" :height="198" />
+    </template>
+    <template v-else>
+      <router-link
+        v-for="category in Object.values(categories.byId)"
+        :key="category.id"
+        :to="`/category/${category.id}`"
+      >
+        <category-card :category="category" />
+      </router-link>
+    </template>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 
 import CategoryCard from './CategoryCard.vue';
-import { Category } from '@/store/modules/content/state';
+import SkeletonCard from '@/components/common/SkeletonCard.vue';
+import { Category, Content } from '@/store/modules/content/state';
 
 export default defineComponent({
   name: 'CategoryList',
   components: {
-    CategoryCard
+    CategoryCard,
+    SkeletonCard
   },
   props: {
     categories: {
-      type: Array as () => Category[],
+      type: Object as () => Content<Category>,
       required: true
     }
+  },
+  setup(props) {
+    const count = computed(() => Object.values(props.categories.byId).length);
+
+    return {
+      count
+    };
   }
 });
 </script>
 
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
 
   a {
     text-decoration: none;
+  }
 
-    &:not(:last-child) {
-      margin-bottom: 8px;
-    }
+  & > *:not(:last-child) {
+    margin-bottom: var(--spacing-2);
   }
 }
 </style>

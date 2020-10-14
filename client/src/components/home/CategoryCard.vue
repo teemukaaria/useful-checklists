@@ -1,7 +1,10 @@
 <template>
-  <div class="category-card" :style="{ '--color': category.color }">
+  <div
+    class="category-card card card--colored"
+    :style="{ '--color': category.color }"
+  >
     <span class="bar">
-      <h6>{{ category.name }}</h6>
+      <h4>{{ category.name }}</h4>
       <div class="pimple" />
     </span>
     <ul>
@@ -31,40 +34,16 @@ export default defineComponent({
 <style lang="scss" scoped>
 .category-card {
   display: flex;
-  position: relative;
   flex-direction: column;
   text-decoration: none;
-  color: var(--color-text);
-  padding: 8px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: var(--color);
-    z-index: -1;
-    border-radius: 8px;
-    opacity: 0.5;
-  }
 
   .bar {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-1-5);
 
-    h6 {
+    h4 {
       flex: 1;
-    }
-
-    .pimple {
-      height: calc(var(--font-size-large) - 2px);
-      width: calc(var(--font-size-large) - 2px);
-      margin: 2px;
-      border-radius: 100%;
-      background: var(--color);
     }
   }
 
@@ -73,15 +52,15 @@ export default defineComponent({
 
     li {
       font-size: var(--font-size-small);
-      margin-bottom: 4px;
+      margin-bottom: var(--spacing-1-5);
       opacity: 0.7;
     }
   }
 
   .total {
     align-self: flex-end;
-    font-size: var(--font-size-small);
-    font-weight: bold;
+    font-size: var(--font-size-text);
+    font-weight: 600;
 
     &::after {
       content: ' \02192';

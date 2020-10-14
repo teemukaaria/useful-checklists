@@ -1,10 +1,13 @@
 <template>
-  <div class="checklist-card" :style="{ '--color': color }">
-    <p class="name">{{ checklist.name }}</p>
+  <div class="checklist-card card" :style="{ '--color': color }">
+    <h6>{{ checklist.name }}</h6>
     <p class="description">{{ checklist.description }}</p>
-    <span class="bar">
-      <span class="steps">{{ checklist.item_count }} steps</span> • {{ checklist.collaborators.length }} contributors
-    </span>
+    <p class="bar">
+      <span class="steps">{{ checklist.item_count }} steps</span>
+      <span class="contributors">
+        • {{ checklist.collaborators.length }} contributors
+      </span>
+    </p>
   </div>
 </template>
 
@@ -16,7 +19,7 @@ export default defineComponent({
   name: 'ChecklistCard',
   props: {
     checklist: {
-      type: Object as () => Checklist & { color: string },
+      type: Object as () => Checklist,
       required: true
     },
     color: String
@@ -30,27 +33,27 @@ export default defineComponent({
   position: relative;
   flex-direction: column;
   text-decoration: none;
-  color: var(--color-text);
-  background: var(--color-background-card);
-  border-radius: 8px;
-  padding: 8px;
 
-  .name {
-    font-weight: bold;
-    margin-bottom: 16px;
+  p {
+    font-size: var(--font-size-small);
   }
 
   .description {
-    margin-bottom: 16px;
+    opacity: 0.75;
+  }
+
+  & > *:not(:last-child) {
+    margin-bottom: var(--spacing-1-5);
   }
 
   .bar {
     align-self: flex-end;
-    font-size: var(--font-size-small);
-    opacity: 0.7;
 
     .steps {
       color: var(--color);
+    }
+    .contributors {
+      opacity: 0.5;
     }
   }
 }

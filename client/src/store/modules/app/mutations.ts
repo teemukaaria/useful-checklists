@@ -7,12 +7,12 @@ enum MutationTypes {
 
 export const Mutations = createModuleActions('APP', MutationTypes);
 
-export type Mutations<S = State> = {
-  [Mutations.SET_USER](state: S, payload: User | null): void;
+export type Mutations = {
+  [Mutations.SET_USER](state: State, payload: User | null): void;
 };
 
 export default {
   [Mutations.SET_USER]: (state, payload) => {
-    state.user = payload;
+    state.user = payload && { ...(state.user || {}), ...payload };
   }
 } as Mutations;

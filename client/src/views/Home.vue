@@ -1,35 +1,32 @@
 <template>
   <div class="home">
     <div class="section">
-      <h2 v-if="inProgress.length > 0">In progress</h2>
-      <in-progress-list :checklists="inProgress" />
+      <h2
+        v-if="
+          inProgress.status !== 'done' ||
+            Object.values(inProgress.byId).length > 0
+        "
+      >
+        In progress
+      </h2>
+      <in-progress-list
+        :checklists="inProgress"
+        :loading="inProgress.status === 'loading'"
+      />
     </div>
     <div class="section">
       <h2>Explore checklists</h2>
       <category-list :categories="categories" />
     </div>
-    <router-link to="/profile">Account</router-link>
-    <router-link to="/checklist/create">Create checklist</router-link>
-    <ul>
-      <li v-for="checklist in checklists" :key="checklist">
-        <router-link :to="`/checklist/${checklist}`">
-          Checklist {{ checklist }}
-        </router-link>
-      </li>
-    </ul>
-    <p v-if="user">Logged in as {{ user.name }}</p>
-    <button v-if="user" @click="handleLogoutClick">Logout</button>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import firebase from 'firebase';
+import { computed, defineComponent, watch, onMounted } from 'vue';
 
 import InProgressList from '@/components/home/InProgressList.vue';
 import CategoryList from '@/components/home/CategoryList.vue';
-import { useStore, UserActions, ContentActions } from '@/store';
+import { useStore, ContentActions } from '@/store';
 
 export default defineComponent({
   name: 'Home',
@@ -39,50 +36,27 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    const router = useRouter();
 
     const user = computed(() => store.state.app.user);
-    const categories = computed(() =>
-      Object.values(store.state.content.categoriesById)
-    );
-    const inProgress = computed(() =>
-      Object.values(store.state.content.inProgressById)
-    );
+    const categories = computed(() => store.state.content.categories);
+    const inProgress = computed(() => store.state.content.inProgress);
 
-    onMounted(() => {
+    const fetch = () => {
       if (user.value) {
         store.dispatch(ContentActions.FETCH_CATEGORIES, undefined);
         store.dispatch(ContentActions.FETCH_IN_PROGRESS, undefined);
       }
+    };
+    onMounted(() => fetch());
+    const userId = computed(() => user.value && user.value.id);
+    watch(userId, (userId, prevUserId) => {
+      if (!prevUserId || userId !== prevUserId) fetch();
     });
-
-    const handleLogoutClick = () => {
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          store.dispatch(UserActions.LOGOUT, undefined);
-          router.replace('/login');
-        })
-        .catch(() => {});
-    };
-
-    const handleLoginClick = () => {
-      router.push('/login');
-    };
-
-    const handleSignUpClick = () => {
-      router.push('/register');
-    };
 
     return {
       user,
-      handleLogoutClick,
-      handleLoginClick,
-      handleSignUpClick,
       categories,
-      inProgress,
-      checklists: [1, 2, 3]
+      inProgress
     };
   }
 });
@@ -94,31 +68,12 @@ export default defineComponent({
 }
 
 h2 {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-2);
 }
 
 .section {
   &:not(:last-child) {
-    margin-bottom: 16px;
-  }
-}
-
-button,
-a {
-  display: block;
-  margin: auto;
-  margin-top: 16px;
-}
-
-ul {
-  padding-inline-start: 0;
-
-  li {
-    display: inline-block;
-
-    &:not(:last-child) {
-      margin-right: 8px;
-    }
+    margin-bottom: var(--spacing-4);
   }
 }
 </style>

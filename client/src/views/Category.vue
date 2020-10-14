@@ -1,10 +1,18 @@
 <template>
-  <div class="home">
+  <div class="category-view">
     <div class="section">
-      <category-header-card :category="category" />
+      <template v-if="category">
+        <category-header-card :category="category" />
+      </template>
+      <template v-else>
+        <skeleton-card :height="122" />
+      </template>
     </div>
     <div class="section">
-      <checklist-card-list :checklists="checklists" :color="category.color"/>
+      <checklist-card-list
+        :checklists="checklists"
+        :color="category && category.color"
+      />
     </div>
   </div>
 </template>
@@ -13,6 +21,8 @@
 import { computed, defineComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore, ContentActions } from '@/store';
+
+import SkeletonCard from '@/components/common/SkeletonCard.vue';
 import CategoryHeaderCard from '@/components/categories/CategoryHeaderCard.vue';
 import ChecklistCardList from '@/components/categories/ChecklistCardList.vue';
 
@@ -20,30 +30,23 @@ export default defineComponent({
   name: 'Category',
   components: {
     CategoryHeaderCard,
-    ChecklistCardList
+    ChecklistCardList,
+    SkeletonCard
   },
   setup() {
-    const {
-      params: { id }
-    } = useRoute();
+    const { params } = useRoute();
+    const id = params.id as string;
 
     const store = useStore();
-    const router = useRoute();
 
-    const user = computed(() => store.state.app.user);
-    const checklists = computed(() =>
-      Object.values(store.state.content.checklistsById)
-    );
+    const checklists = computed(() => store.state.content.checklists);
+    const categories = computed(() => store.state.content.categories.byId);
 
-    const category = computed(() =>
-      store.state.content.currentCategory
-    );
+    const category = computed(() => categories.value[id]);
 
     onMounted(() => {
-      if (user.value) {
-        store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id as string);
-        store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id as string);
-      }
+      store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id);
+      store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id);
     });
 
     return {
@@ -55,15 +58,13 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.home {
+.category-view {
   width: 100%;
 
   .section {
     &:not(:last-child) {
-      margin-bottom: 16px;
+      margin-bottom: var(--spacing-2);
     }
   }
 }
-
 </style>
-
