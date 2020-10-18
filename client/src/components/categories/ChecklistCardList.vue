@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper">
-    <template v-if="checklists.status !== 'loading'">
+    <template v-if="!loading">
       <router-link
-        v-for="checklist in Object.values(checklists.byId)"
+        v-for="checklist in checklists"
         :key="checklist.id"
         :to="`/checklist/${checklist.id}`"
       >
@@ -22,7 +22,7 @@ import { defineComponent } from 'vue';
 
 import ChecklistCard from './ChecklistCard.vue';
 import SkeletonCard from '@/components/common/SkeletonCard.vue';
-import { Checklist, Content } from '@/store/modules/content/state';
+import { Checklist } from '@/store/modules/content/state';
 
 export default defineComponent({
   name: 'ChecklistCardList',
@@ -32,8 +32,12 @@ export default defineComponent({
   },
   props: {
     checklists: {
-      type: Object as () => Content<Checklist>,
+      type: Array as () => Checklist[],
       required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
     },
     color: { type: String, default: 'white' }
   }

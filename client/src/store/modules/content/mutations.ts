@@ -29,6 +29,7 @@ export type Mutations = {
 export default {
   [Mutations.SET_LOADING]: (state, key) => {
     state[key].status = 'loading';
+    state[key].numOfLoading++;
   },
   [Mutations.SET_ERROR]: (state, payload) => {
     state[payload.key] = {
@@ -38,16 +39,21 @@ export default {
     };
   },
   [Mutations.SET_CONTENT]: (state, { key, content }) => {
+    const { status, numOfLoading } = state[key];
     state[key] = {
       ...state[key], // needed for typing
       byId: content,
-      status: 'done',
+      numOfLoading: Math.max(0, numOfLoading - 1),
+      status: numOfLoading <= 1 ? 'done' : status,
       error: undefined
     };
   },
   [Mutations.ADD_CONTENT]: (state, { key, content }) => {
+    const { status, numOfLoading } = state[key];
     state[key] = {
       ...state[key], // needed for typing
+      numOfLoading: Math.max(0, numOfLoading - 1),
+      status: numOfLoading <= 1 ? 'done' : status,
       byId: { ...state[key].byId, ...content }
     };
   }

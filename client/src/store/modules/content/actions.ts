@@ -69,6 +69,7 @@ export default {
     commit(Mutations.SET_CONTENT, { key: 'inProgress', content: inProgress });
   },
   async [Actions.FETCH_CATEGORY_BY_ID]({ commit }, id: string) {
+    commit(Mutations.SET_LOADING, 'categories');
     await firebase
       .firestore()
       .collection('categories')
@@ -78,7 +79,7 @@ export default {
         if (doc.exists) {
           commit(Mutations.ADD_CONTENT, {
             key: 'categories',
-            content: { [doc.id]: doc.data() as Category }
+            content: { [doc.id]: { ...doc.data(), id: doc.id } as Category }
           });
         } else {
           console.log('Could not find category for id: ' + id);
@@ -87,6 +88,7 @@ export default {
   },
   async [Actions.FETCH_CHECKLISTS_FOR_CATEGORY]({ commit }, category: string) {
     commit(Mutations.SET_LOADING, 'checklists');
+    commit(Mutations.SET_LOADING, 'checklistsByCategory');
     const checklists = {} as { [id: string]: Checklist };
     await firebase
       .firestore()
@@ -99,6 +101,10 @@ export default {
             (checklists[doc.id] = { ...doc.data(), id: doc.id } as Checklist)
         )
       );
-    commit(Mutations.SET_CONTENT, { key: 'checklists', content: checklists });
+    commit(Mutations.ADD_CONTENT, { key: 'checklists', content: checklists });
+    commit(Mutations.ADD_CONTENT, {
+      key: 'checklistsByCategory',
+      content: { [category]: Object.keys(checklists) }
+    });
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

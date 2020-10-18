@@ -8,7 +8,7 @@ import { defineComponent, computed, onMounted } from 'vue';
 import firebase from 'firebase';
 
 import AppBar from '@/components/app/AppBar.vue';
-import { useStore, UserActions } from './store';
+import { useStore, UserActions, ContentActions } from './store';
 import { convertUserIn } from './utils/store.utils';
 
 export default defineComponent({
@@ -26,6 +26,8 @@ export default defineComponent({
         else store.dispatch(UserActions.LOGOUT, undefined);
         unsub();
       });
+
+      store.dispatch(ContentActions.FETCH_CATEGORIES, undefined);
     });
 
     return {

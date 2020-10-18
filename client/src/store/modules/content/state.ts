@@ -1,5 +1,6 @@
 export type Content<T> = {
   status?: 'loading' | 'done' | 'error';
+  numOfLoading: number;
   error?: string;
   byId: { [id: string]: T };
 };
@@ -40,13 +41,13 @@ export interface InProgress {
 export interface State {
   categories: Content<Category>;
   inProgress: Content<InProgress>;
-  // currentCategory: Category;
   checklists: Content<Checklist>;
+  checklistsByCategory: Content<string[]>;
 }
 
 export default {
-  categories: { byId: {} },
-  inProgress: { byId: {} },
-  // currentCategory: {},
-  checklists: { byId: {} }
+  categories: { byId: {}, numOfLoading: 0 },
+  inProgress: { byId: {}, numOfLoading: 0 },
+  checklists: { byId: {}, numOfLoading: 0 },
+  checklistsByCategory: { byId: {}, numOfLoading: 0 }
 } as State;

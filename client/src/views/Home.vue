@@ -11,7 +11,7 @@
       </h2>
       <in-progress-list
         :checklists="inProgress"
-        :loading="inProgress.status === 'loading'"
+        :loading="!inProgress.status || inProgress.status === 'loading'"
       />
     </div>
     <div class="section">
@@ -43,7 +43,6 @@ export default defineComponent({
 
     const fetch = () => {
       if (user.value) {
-        store.dispatch(ContentActions.FETCH_CATEGORIES, undefined);
         store.dispatch(ContentActions.FETCH_IN_PROGRESS, undefined);
       }
     };

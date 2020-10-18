@@ -11,6 +11,7 @@
     <div class="section">
       <checklist-card-list
         :checklists="checklists"
+        :loading="checklistsLoading"
         :color="category && category.color"
       />
     </div>
@@ -39,19 +40,41 @@ export default defineComponent({
 
     const store = useStore();
 
-    const checklists = computed(() => store.state.content.checklists);
+    const allChecklists = computed(() => store.state.content.checklists);
     const categories = computed(() => store.state.content.categories.byId);
+    const checklistsByCategory = computed(
+      () => store.state.content.checklistsByCategory.byId
+    );
 
     const category = computed(() => categories.value[id]);
 
+    const checklistIds = computed(() => checklistsByCategory.value[id]);
+    const checklists = computed(() =>
+      checklistIds.value
+        ? Object.values(allChecklists.value.byId).filter(checklist =>
+            checklistIds.value.includes(checklist.id)
+          )
+        : []
+    );
+    const checklistsLoading = computed(
+      () =>
+        !checklistIds.value &&
+        (!allChecklists.value.status ||
+          allChecklists.value.status === 'loading')
+    );
+
     onMounted(() => {
-      store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id);
+      // This is handeled in app level
+      // store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id);
       store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id);
     });
 
     return {
+      allChecklists,
+      checklistsByCategory,
       category,
-      checklists
+      checklists,
+      checklistsLoading
     };
   }
 });
