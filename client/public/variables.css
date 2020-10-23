@@ -11,9 +11,11 @@ body {
   --font-size-large: 20px;
 
   /* SPACING */
+  --spacing-0-5: 5px;
   --spacing-1: 10px;
   --spacing-1-5: 15px;
   --spacing-2: 20px;
+  --spacing-2-5: 25px;
   --spacing-4: 40px;
 
   /* SIZES */

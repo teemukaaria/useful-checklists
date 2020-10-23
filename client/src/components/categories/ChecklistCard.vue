@@ -1,7 +1,7 @@
 <template>
   <div class="checklist-card card" :style="{ '--color': color }">
     <h6>{{ checklist.name }}</h6>
-    <p class="description">{{ checklist.description }}</p>
+    <p class="typography--body">{{ checklist.description }}</p>
     <p class="bar">
       <span class="steps">{{ checklist.item_count }} steps</span>
       <span class="contributors">
@@ -36,10 +36,6 @@ export default defineComponent({
 
   p {
     font-size: var(--font-size-small);
-  }
-
-  .description {
-    opacity: 0.75;
   }
 
   & > *:not(:last-child) {

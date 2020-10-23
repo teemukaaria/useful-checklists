@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="page">
     <div class="section">
       <h2
         v-if="
@@ -41,16 +41,16 @@ export default defineComponent({
     const categories = computed(() => store.state.content.categories);
     const inProgress = computed(() => store.state.content.inProgress);
 
-    const fetch = () => {
-      if (user.value) {
-        store.dispatch(ContentActions.FETCH_IN_PROGRESS, undefined);
-      }
-    };
-    onMounted(() => fetch());
     const userId = computed(() => user.value && user.value.id);
-    watch(userId, (userId, prevUserId) => {
-      if (!prevUserId || userId !== prevUserId) fetch();
-    });
+    watch(
+      [userId],
+      () => {
+        if (userId.value) {
+          store.dispatch(ContentActions.FETCH_IN_PROGRESS, undefined);
+        }
+      },
+      { immediate: true }
+    );
 
     return {
       user,
@@ -62,10 +62,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.home {
-  width: 100%;
-}
-
 h2 {
   margin-bottom: var(--spacing-2);
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="category-view">
+  <div class="category-view page">
     <div class="section">
       <template v-if="category">
         <category-header-card :category="category" />
@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue';
+import { computed, defineComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore, ContentActions } from '@/store';
 
@@ -41,14 +41,11 @@ export default defineComponent({
     const store = useStore();
 
     const allChecklists = computed(() => store.state.content.checklists);
-    const categories = computed(() => store.state.content.categories.byId);
-    const checklistsByCategory = computed(
-      () => store.state.content.checklistsByCategory.byId
+    const category = computed(() => store.state.content.categories.byId[id]);
+    const checklistIds = computed(
+      () => store.state.content.checklistsByCategory.byId[id]
     );
 
-    const category = computed(() => categories.value[id]);
-
-    const checklistIds = computed(() => checklistsByCategory.value[id]);
     const checklists = computed(() =>
       checklistIds.value
         ? Object.values(allChecklists.value.byId).filter(checklist =>
@@ -63,15 +60,17 @@ export default defineComponent({
           allChecklists.value.status === 'loading')
     );
 
-    onMounted(() => {
-      // This is handeled in app level
-      // store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id);
-      store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id);
-    });
+    watch(
+      [id],
+      () => {
+        // This is handeled in app level
+        // store.dispatch(ContentActions.FETCH_CATEGORY_BY_ID, id);
+        store.dispatch(ContentActions.FETCH_CHECKLISTS_FOR_CATEGORY, id);
+      },
+      { immediate: true }
+    );
 
     return {
-      allChecklists,
-      checklistsByCategory,
       category,
       checklists,
       checklistsLoading
@@ -82,8 +81,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .category-view {
-  width: 100%;
-
   .section {
     &:not(:last-child) {
       margin-bottom: var(--spacing-2);

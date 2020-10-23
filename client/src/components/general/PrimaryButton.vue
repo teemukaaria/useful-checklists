@@ -1,16 +1,35 @@
 <template>
-  <button class="primary-button card card--colored">
-    {{ text }}
+  <button
+    :class="{
+      'primary-button': true,
+      card: true,
+      'card--colored': true,
+      'button--text': variant === 'text'
+    }"
+    :ref="e => (rootRef = e)"
+  >
+    <slot />
   </button>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
+import { useBlurOnClick } from '@/utils/ui.utils';
 
 export default defineComponent({
   name: 'PrimaryButton',
   props: {
-    text: String
+    variant: {
+      type: String as () => 'contained' | 'text',
+      default: 'contained'
+    }
+  },
+  setup() {
+    const rootRef = ref<HTMLButtonElement | null>(null);
+
+    useBlurOnClick(rootRef);
+
+    return { rootRef };
   }
 });
 </script>
@@ -21,10 +40,40 @@ export default defineComponent({
   border: none;
   padding: var(--spacing-1) var(--spacing-2);
   font-weight: bold;
+  font-size: var(--font-size-small);
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  /deep/ svg {
+    color: var(--color, white);
+    padding: 0;
+    box-sizing: content-box;
+    height: var(--font-size-large);
+    width: var(--font-size-large);
+    margin: -2px;
+
+    &:not(:last-child) {
+      margin-right: 4px;
+    }
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
 
   &::before {
     opacity: 0.15;
+    z-index: 0;
+  }
+
+  &.button--text {
+    background: none;
+  }
+  &.button--text::before {
+    display: none;
   }
 }
 </style>

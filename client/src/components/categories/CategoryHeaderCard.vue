@@ -7,12 +7,12 @@
       <h4>{{ category.name }}</h4>
       <div class="pimple" />
     </span>
-    <p v-if="category.description" class="description">
+    <p v-if="category.description" class="typography--body description">
       {{ category.description }}
     </p>
     <span class="bar">
       <span class="total">{{ category.list_count }} checklists</span>
-      <primary-button text="contribute" />
+      <primary-button>contribute</primary-button>
     </span>
   </div>
 </template>
@@ -64,9 +64,7 @@ export default defineComponent({
   }
 
   .description {
-    font-size: var(--font-size-small);
     margin-bottom: var(--spacing-1);
-    opacity: 0.75;
   }
 }
 </style>

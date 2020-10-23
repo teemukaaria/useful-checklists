@@ -2,7 +2,8 @@ import {
   createStore,
   useStore as useVuexStore,
   Store as VuexStore,
-  DispatchOptions
+  DispatchOptions,
+  createLogger
 } from 'vuex';
 
 import app, { State as AppState } from './modules/app';
@@ -35,7 +36,8 @@ export default createStore<CombinedState>({
   modules: {
     app,
     content
-  }
+  },
+  plugins: [createLogger()]
 }) as Store;
 
 export const useStore = () => useVuexStore<CombinedState>() as Store;

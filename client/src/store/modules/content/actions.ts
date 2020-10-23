@@ -1,8 +1,12 @@
 import { ActionTree, ActionContext } from 'vuex';
 import firebase from 'firebase';
 
-import { createModuleActions } from '@/store/utils';
-import { State, Category, InProgress, Checklist } from './state';
+import {
+  convertDocIn,
+  convertListToByIdMap,
+  createModuleActions
+} from '@/store/utils';
+import { State, Category, InProgress, Checklist, ChecklistItem } from './state';
 import { CombinedState } from '@/store';
 import { Mutations } from './mutations';
 
@@ -17,7 +21,8 @@ enum ActionTypes {
   FETCH_CATEGORIES = 'FETCH_CATEGORIES',
   FETCH_IN_PROGRESS = 'FETCH_IN_PROGRESS',
   FETCH_CATEGORY_BY_ID = 'FETCH_CATEGORY_BY_ID',
-  FETCH_CHECKLISTS_FOR_CATEGORY = 'FETCH_CHECKLISTS_FOR_CATEGORY'
+  FETCH_CHECKLISTS_FOR_CATEGORY = 'FETCH_CHECKLISTS_FOR_CATEGORY',
+  FETCH_CHECKLIST = 'FETCH_CHECKLIST'
 }
 
 export const Actions = createModuleActions('CONTENT', ActionTypes);
@@ -33,41 +38,37 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     category: string
   ): void;
+  [Actions.FETCH_CHECKLIST](
+    context: AugmentedActionContext,
+    checklistId: string
+  ): void;
 }
 
 export default {
   async [Actions.FETCH_CATEGORIES]({ commit }) {
     commit(Mutations.SET_LOADING, 'categories');
-    const categories = {} as { [id: string]: Category };
-    await firebase
+    const categories = await firebase
       .firestore()
       .collection('categories')
       .get()
-      .then(snapshot =>
-        snapshot.forEach(
-          doc =>
-            (categories[doc.id] = { ...doc.data(), id: doc.id } as Category)
-        )
-      );
+      .then(snap => snap.docs.map(convertDocIn) as Category[])
+      .then(convertListToByIdMap);
     commit(Mutations.SET_CONTENT, { key: 'categories', content: categories });
   },
+
   async [Actions.FETCH_IN_PROGRESS]({ commit, rootState }) {
     commit(Mutations.SET_LOADING, 'inProgress');
     const { user } = rootState.app;
-    const inProgress = {} as { [id: string]: InProgress };
-    await firebase
+    const inProgress = await firebase
       .firestore()
       .collection('in_progress')
       .where('user', '==', user && user.id)
       .get()
-      .then(snap =>
-        snap.forEach(
-          doc =>
-            (inProgress[doc.id] = { ...doc.data(), id: doc.id } as InProgress)
-        )
-      );
+      .then(snap => snap.docs.map(convertDocIn) as InProgress[])
+      .then(convertListToByIdMap);
     commit(Mutations.SET_CONTENT, { key: 'inProgress', content: inProgress });
   },
+
   async [Actions.FETCH_CATEGORY_BY_ID]({ commit }, id: string) {
     commit(Mutations.SET_LOADING, 'categories');
     await firebase
@@ -79,32 +80,47 @@ export default {
         if (doc.exists) {
           commit(Mutations.ADD_CONTENT, {
             key: 'categories',
-            content: { [doc.id]: { ...doc.data(), id: doc.id } as Category }
+            content: { [doc.id]: convertDocIn<Category>(doc) }
           });
         } else {
           console.log('Could not find category for id: ' + id);
         }
       });
   },
+
   async [Actions.FETCH_CHECKLISTS_FOR_CATEGORY]({ commit }, category: string) {
     commit(Mutations.SET_LOADING, 'checklists');
     commit(Mutations.SET_LOADING, 'checklistsByCategory');
-    const checklists = {} as { [id: string]: Checklist };
-    await firebase
+    const checklists = await firebase
       .firestore()
       .collection('checklists')
       .where('category', '==', category)
       .get()
-      .then(snapshot =>
-        snapshot.forEach(
-          doc =>
-            (checklists[doc.id] = { ...doc.data(), id: doc.id } as Checklist)
-        )
-      );
+      .then(snap => snap.docs.map(convertDocIn) as Checklist[])
+      .then(convertListToByIdMap);
     commit(Mutations.ADD_CONTENT, { key: 'checklists', content: checklists });
     commit(Mutations.ADD_CONTENT, {
       key: 'checklistsByCategory',
       content: { [category]: Object.keys(checklists) }
+    });
+  },
+
+  async [Actions.FETCH_CHECKLIST]({ commit }, checklistId: string) {
+    commit(Mutations.SET_LOADING, 'checklists');
+    const checklistRef = firebase
+      .firestore()
+      .collection('checklists')
+      .doc(checklistId);
+    const checklist: Checklist = await checklistRef.get().then(convertDocIn);
+    const checklistItems: ChecklistItem[] = await checklistRef
+      .collection('items')
+      .orderBy('order')
+      .get()
+      .then(snap => snap.docs.map(convertDocIn));
+    checklist.items = checklistItems;
+    commit(Mutations.ADD_CONTENT, {
+      key: 'checklists',
+      content: { [checklist.id]: checklist }
     });
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

@@ -14,6 +14,14 @@ export interface Category {
   highlights: string[];
 }
 
+export interface ChecklistItem {
+  id: string;
+  name: string;
+  description: string;
+  order: number;
+  done?: boolean;
+}
+
 export interface Checklist {
   id: string;
   category: string;
@@ -25,6 +33,7 @@ export interface Checklist {
   original: string;
   owner: string;
   private: boolean;
+  items?: ChecklistItem[];
 }
 
 export interface InProgress {

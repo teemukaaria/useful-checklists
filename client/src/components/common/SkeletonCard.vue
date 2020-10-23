@@ -1,17 +1,24 @@
 <template>
-  <div
-    class="skeleton"
-    :style="{
-      height: height ? `${height}px` : '100%',
-      width: width ? `${width}px` : '100%'
-    }"
-  />
+  <skeleton-wrapper class="skeleton-wrapper">
+    <div
+      class="skeleton-card"
+      :style="{
+        height: height ? `${height}px` : '100%',
+        width: width ? `${width}px` : '100%'
+      }"
+    />
+  </skeleton-wrapper>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 
+import SkeletonWrapper from './SkeletonWrapper.vue';
+
 export default defineComponent({
+  components: {
+    SkeletonWrapper
+  },
   props: {
     width: { type: Number, default: 0 },
     height: { type: Number, default: 0 }
@@ -31,29 +38,11 @@ export default defineComponent({
     background-position: 0%;
   }
 }
-.skeleton {
-  position: relative;
-  width: 100%;
-  height: 100%;
+.skeleton-card {
   background: var(--color-background-card);
   border-radius: var(--border-radius-card);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(
-      60deg,
-      transparent 45%,
-      #ffffff11,
-      transparent 55%
-    );
-    background-size: 300%;
-    border-radius: var(--border-radius-card);
-    animation: slide infinite 2s;
-  }
+}
+.skeleton-wrapper::after {
+  border-radius: var(--border-radius-card);
 }
 </style>

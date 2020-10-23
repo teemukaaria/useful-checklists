@@ -36,3 +36,12 @@
   height: var(--size-icon);
   width: var(--size-icon);
 }
+
+.page {
+  width: 100%;
+}
+
+.typography--body {
+  font-size: var(--font-size-small);
+  opacity: 0.75;
+}
