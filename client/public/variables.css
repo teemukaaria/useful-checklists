@@ -3,9 +3,11 @@ body {
   --color-text: #ffffff;
   --color-background: #080808;
   --color-background-card: #1f1f1f;
+  --color-background-grey: #2f2f2f;
   --color-blue:  #15A9FF;
 
   /* FONTS */
+  --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-text: 16px;
   --font-size-large: 20px;

@@ -12,7 +12,9 @@
     </p>
     <span class="bar">
       <span class="total">{{ category.list_count }} checklists</span>
-      <primary-button>contribute</primary-button>
+      <router-link :to="`/checklist/create?category=${category.id}`">
+        <primary-button>contribute</primary-button>
+      </router-link>
     </span>
   </div>
 </template>

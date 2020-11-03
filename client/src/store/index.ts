@@ -14,14 +14,19 @@ import content, { State as ContentState } from './modules/content';
 import { ActionsInterface as ContentActionsInterface } from './modules/content/actions';
 export { Actions as ContentActions } from './modules/content/actions';
 
+import edit, { State as EditState } from './modules/edit';
+import { ActionsInterface as EditActionsInterface } from './modules/edit/actions';
+export { Actions as EditActions } from './modules/edit/actions';
+
 export type RootState = {};
 
 export type CombinedState = RootState & {
   app: AppState;
   content: ContentState;
+  edit: EditState;
 };
 
-type CombinedActions = AppActionsInterface & ContentActionsInterface;
+type CombinedActions = AppActionsInterface & ContentActionsInterface & EditActionsInterface;
 
 // NOTE: Commits shoudn't be used outside of actions -> type error if tryig to commit
 export type Store = Omit<VuexStore<CombinedState>, 'dispatch' | 'commit'> & {
@@ -35,7 +40,8 @@ export type Store = Omit<VuexStore<CombinedState>, 'dispatch' | 'commit'> & {
 export default createStore<CombinedState>({
   modules: {
     app,
-    content
+    content,
+    edit
   },
   plugins: [createLogger()]
 }) as Store;
