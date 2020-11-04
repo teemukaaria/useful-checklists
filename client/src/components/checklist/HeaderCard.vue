@@ -17,9 +17,11 @@
         <primary-button class="button--bookmark">
           <bookmark-icon />
         </primary-button>
-        <primary-button>
-          copy
-        </primary-button>
+        <router-link :to="`/checklist/create?copy=${checklist.id}`">
+          <primary-button>
+            copy
+          </primary-button>
+        </router-link>
       </div>
     </div>
   </div>

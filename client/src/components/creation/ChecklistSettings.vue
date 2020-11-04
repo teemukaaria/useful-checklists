@@ -101,7 +101,7 @@ export default defineComponent({
                             collaborators: [],
                             likes: 0,
                             private: store.state.edit.private,
-                            original: ""
+                            original: store.state.edit.original ? store.state.edit.original : ""
                           }).then(document => {
                             
                             const db = firebase.firestore();

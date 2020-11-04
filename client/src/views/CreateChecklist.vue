@@ -28,6 +28,7 @@ export default defineComponent({
 
     const { query } = useRoute();
     const category = query.category as string;
+    const copy = query.copy as string;
 
     const store = useStore();
     const items = computed(() => Object.values(store.state.edit.editItemsById));
@@ -52,11 +53,35 @@ export default defineComponent({
       store.dispatch(EditActions.ADD_ITEM, item);
     }
 
+    const checklists = computed(() => store.state.content.checklists);
     const categories = computed(() => store.state.content.categories);
     watch(
-      [categories],
+      [checklists, categories],
       () => {
-        if (categories.value.status === 'done') {
+        if (categories.value.status === 'done' && checklists.value.status === 'done' && copy && store.state.content.checklists.byId[copy]) {
+          const checklist = store.state.content.checklists.byId[copy];
+
+          const editItems: EditItem[] = [];
+
+          if (checklist.items) {
+            for (let item of checklist.items) {
+              editItems.push({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                order: item.order
+              });
+            }
+          }
+
+          store.dispatch(EditActions.SET_CATEGORY, checklist.category);
+          store.dispatch(EditActions.SET_TITLE, checklist.name);
+          store.dispatch(EditActions.SET_DESCRIPTION, checklist.description);
+          store.dispatch(EditActions.SET_PRIVATE, true);
+          store.dispatch(EditActions.SET_ITEMS, editItems);
+          store.dispatch(EditActions.SET_ORIGINAL, copy);
+
+        } else if (categories.value.status === 'done') {
           
           if (category && store.state.content.categories.byId[category]) {
             store.dispatch(EditActions.SET_CATEGORY, category);
@@ -67,6 +92,7 @@ export default defineComponent({
           store.dispatch(EditActions.SET_TITLE, "");
           store.dispatch(EditActions.SET_DESCRIPTION, "");
           store.dispatch(EditActions.SET_PRIVATE, false);
+          store.dispatch(EditActions.SET_ITEMS, []);
         }
       },
       { immediate: true }

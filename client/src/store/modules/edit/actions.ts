@@ -23,7 +23,9 @@ enum ActionTypes {
   SET_TITLE = 'SET_TITLE',
   SET_DESCRIPTION = 'SET_DESCRIPTION',
   SET_CATEGORY = 'SET_CATEGORY',
-  SET_PRIVATE = 'SET_PRIVATE'
+  SET_PRIVATE = 'SET_PRIVATE',
+  SET_ITEMS = 'SET_ITEMS',
+  SET_ORIGINAL = 'SET_ORIGINAL'
 }
 
 export const Actions = createModuleActions('EDIT', ActionTypes);
@@ -61,6 +63,14 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload: boolean
   ): void;
+  [Actions.SET_ITEMS](
+    context: AugmentedActionContext,
+    payload: EditItem[]
+  ): void;
+  [Actions.SET_ORIGINAL](
+    context: AugmentedActionContext,
+    payload?: string 
+  ): void;
 }
 
 export default {
@@ -87,5 +97,11 @@ export default {
   },
   async [Actions.SET_PRIVATE]({ commit }, item: boolean) {
     commit(Mutations.SET_PRIVATE, item);
+  },
+  async [Actions.SET_ITEMS]({ commit }, items: EditItem[]) {
+    commit(Mutations.SET_ITEMS, items);
+  },
+  async [Actions.SET_ORIGINAL]({ commit }, original) {
+    commit(Mutations.SET_ORIGINAL, original);
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;
