@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <img v-if="image" :src="image" aria-label="profile page" />
+    <img v-else src="@/assets/user.png" aria-label="profile page" />
   </div>
 </template>
 
@@ -16,7 +17,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .wrapper {
-  background: var(--color-text);
   padding: 2px;
   border-radius: 100%;
 
