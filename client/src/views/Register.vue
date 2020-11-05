@@ -136,7 +136,7 @@ export default defineComponent({
                       name: user.name,
                       username: signupForm.username,
                       liked: [],
-                      registered: user.registered,
+                      registered: user.registered.getTime(),
                       image: data.user && data.user.photoURL,
                       notifications: {
                         suggestions: true
