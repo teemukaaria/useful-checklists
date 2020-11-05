@@ -91,12 +91,27 @@ export default {
   async [Actions.FETCH_CHECKLISTS_FOR_CATEGORY]({ commit }, category: string) {
     commit(Mutations.SET_LOADING, 'checklists');
     commit(Mutations.SET_LOADING, 'checklistsByCategory');
-    const checklists = await firebase
-      .firestore()
-      .collection('checklists')
-      .where('category', '==', category)
-      .get()
-      .then(snap => snap.docs.map(convertDocIn) as Checklist[])
+
+    const user = firebase.auth().currentUser;
+    const checklistsRef = firebase.firestore().collection('checklists');
+    
+    async function getAvailableChecklists() {
+      const isPublic = checklistsRef.where('category', '==', category).where('private', '==', false).get();
+      const isUser = checklistsRef.where('category', '==', category).where('owner', '==', user?.uid || "").get();
+
+      const [publicChecklists, userChecklists] = await Promise.all([
+        isPublic,
+        isUser
+      ]);
+
+      const publicChecklistsArray = publicChecklists.docs.map(convertDocIn);
+      const userChecklistsArray = userChecklists.docs.map(convertDocIn);
+
+      return publicChecklistsArray.concat(userChecklistsArray);
+    }
+
+    const checklists = await getAvailableChecklists()
+      .then(snap => snap as Checklist[])
       .then(convertListToByIdMap);
     commit(Mutations.ADD_CONTENT, { key: 'checklists', content: checklists });
     commit(Mutations.ADD_CONTENT, {
@@ -107,12 +122,31 @@ export default {
 
   async [Actions.FETCH_CHECKLIST]({ commit }, checklistId: string) {
     commit(Mutations.SET_LOADING, 'checklists');
-    const checklistRef = firebase
-      .firestore()
-      .collection('checklists')
-      .doc(checklistId);
-    const checklist: Checklist = await checklistRef.get().then(convertDocIn);
-    const checklistItems: ChecklistItem[] = await checklistRef
+
+    const user = firebase.auth().currentUser;
+    const checklistsRef = firebase.firestore().collection('checklists');
+
+    async function getLists() {
+      const publicChecklist = checklistsRef.where(firebase.firestore.FieldPath.documentId(), '==', checklistId).where('private', '==', false).get();
+      const userChecklist = checklistsRef.where(firebase.firestore.FieldPath.documentId(), '==', checklistId).where('owner', '==', user?.uid || "").get();
+      
+      const [publicChecklists, userChecklists] = await Promise.all([
+        publicChecklist,
+        userChecklist
+      ]);
+      
+      const publicChecklistsArray = publicChecklists.docs;
+      const userChecklistsArray = userChecklists.docs;
+  
+      return publicChecklistsArray.concat(userChecklistsArray);
+    }
+    
+    const lists = await getLists();
+    const list = lists && lists[0];
+    const checklist: Checklist = convertDocIn(list);
+    const checklistRef = list?.ref;
+
+    const checklistItems: ChecklistItem[] | undefined = checklistRef && await checklistRef
       .collection('items')
       .orderBy('order')
       .get()

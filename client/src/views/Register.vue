@@ -123,14 +123,28 @@ export default defineComponent({
                   displayName: signupForm.name
                 })
                 .then(() => {
-                  store.dispatch(
-                    UserActions.LOGIN,
-                    convertUserIn({
+
+                  const user = convertUserIn({
                       ...data.user,
                       displayName: signupForm.name
-                    } as firebase.User)
-                  );
-                  router.replace('/');
+                  } as firebase.User)
+
+                  firebase.firestore()
+                    .collection('users')
+                    .doc(user.id)
+                    .set({
+                      name: user.name,
+                      username: signupForm.username,
+                      liked: [],
+                      registered: user.registered,
+                      image: data.user && data.user.photoURL,
+                      notifications: {
+                        suggestions: true
+                      }
+                    }).then(() => {
+                      store.dispatch(UserActions.LOGIN, user);
+                      router.replace('/');
+                    });
                 });
             }
           })
