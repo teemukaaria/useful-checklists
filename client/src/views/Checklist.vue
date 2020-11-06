@@ -75,10 +75,9 @@ export default defineComponent({
         inProgressId.value &&
         store.state.content.inProgress.byId[inProgressId.value]
     );
-    const checklist = computed(() => ({
-      ...store.state.content.checklists.byId[checklistId.value],
-      ...inProgress.value
-    }));
+    const checklist = computed(
+      () => store.state.content.checklists.byId[checklistId.value]
+    );
     const category = computed(() =>
       checklist.value
         ? store.state.content.categories.byId[checklist.value.category]
