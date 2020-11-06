@@ -1,8 +1,12 @@
+export type ByIdMap<T> = {
+  [id: string]: T;
+};
+
 export type Content<T> = {
   status?: 'loading' | 'done' | 'error';
   numOfLoading: number;
   error?: string;
-  byId: { [id: string]: T };
+  byId: ByIdMap<T>;
 };
 
 export interface Category {
@@ -33,7 +37,6 @@ export interface Checklist {
   original: string;
   owner: string;
   private: boolean;
-  items?: ChecklistItem[];
 }
 
 export interface InProgress {
@@ -52,11 +55,13 @@ export interface State {
   inProgress: Content<InProgress>;
   checklists: Content<Checklist>;
   checklistsByCategory: Content<string[]>;
+  itemsByChecklist: Content<ByIdMap<ChecklistItem>>;
 }
 
 export default {
   categories: { byId: {}, numOfLoading: 0 },
   inProgress: { byId: {}, numOfLoading: 0 },
   checklists: { byId: {}, numOfLoading: 0 },
-  checklistsByCategory: { byId: {}, numOfLoading: 0 }
+  checklistsByCategory: { byId: {}, numOfLoading: 0 },
+  itemsByChecklist: { byId: {}, numOfLoading: 0 }
 } as State;
