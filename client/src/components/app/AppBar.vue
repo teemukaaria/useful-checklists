@@ -1,6 +1,10 @@
 <template>
   <header>
-    <h1 :class="{ centered: !user }">Useful checklists</h1>
+    <h1 :class="{ centered: !user }">
+      <router-link to="/">
+        Useful checklists
+      </router-link>
+    </h1>
     <div class="actions-wrapper" v-if="user">
       <router-link to="/checklist/create">
         <add-checklist-icon class="icon" aria-label="add checklist" />
@@ -47,6 +51,10 @@ header {
   h1 {
     flex: 1;
     opacity: 0.21;
+
+    a {
+      color: var(--color-text);
+    }
 
     &.centered {
       text-align: center;

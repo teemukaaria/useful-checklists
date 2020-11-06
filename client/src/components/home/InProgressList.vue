@@ -4,7 +4,7 @@
       <router-link
         v-for="checklist in Object.values(checklists.byId)"
         :key="checklist.id"
-        :to="`/checklist/${checklist.id}`"
+        :to="`/checklist/${checklist.checklist}/${checklist.id}`"
       >
         <checklist-card
           :checklist="checklist"
@@ -57,6 +57,7 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .wrapper {
+  overflow-x: auto;
   display: flex;
   padding: 5px;
   margin: -5px;

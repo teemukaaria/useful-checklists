@@ -24,7 +24,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/Category.vue')
   },
   {
-    path: '/checklist/:id',
+    path: '/checklist/:id/:inProgress?',
     name: 'Checklist',
     component: () => import('../views/Checklist.vue')
   },

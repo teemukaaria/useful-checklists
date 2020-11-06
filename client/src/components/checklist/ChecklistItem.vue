@@ -8,7 +8,7 @@
     @keyup.space="handleToggle"
     :ref="e => (rootRef = e)"
   >
-    <checkbox class="checkbox" v-model="done" static />
+    <checkbox class="checkbox" :modelValue="done" static />
     <div class="text-wrapper">
       <h6>{{ item.name }}</h6>
       <p class="typography--body" v-if="item.description">
@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, computed, ref } from 'vue';
 
 import { ChecklistItem } from '@/store/modules/content/state';
 import Checkbox from '@/components/general/Checkbox.vue';
@@ -35,14 +35,14 @@ export default defineComponent({
       required: true
     }
   },
-  setup(props) {
-    const done = ref(props.item.done);
+  setup(props, { emit }) {
+    const done = computed(() => props.item.done);
     const rootRef = ref<HTMLDivElement | null>(null);
 
     useBlurOnClick(rootRef);
 
     const handleToggle = () => {
-      done.value = !done.value;
+      emit('check', props.item.id, !done.value);
     };
 
     return {

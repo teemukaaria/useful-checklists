@@ -8,7 +8,11 @@
       />
       <skeleton-card v-else :height="156" />
     </div>
-    <item-list :items="checklist && checklist.items" />
+    <item-list
+      :items="items"
+      :checklistId="checklist?.id"
+      :inProgressId="inProgressId"
+    />
     <div
       class="suggest-wrapper"
       v-if="
@@ -45,30 +49,55 @@ export default defineComponent({
     PrimaryButton
   },
   setup() {
-    const { params } = useRoute();
-    const checklistId = params.id as string;
+    const route = useRoute();
     const store = useStore();
 
+    const checklistId = computed(() => route.params.id as string);
+    const inProgressId = computed(() => route.params.inProgress as string);
+
     watch(
-      [checklistId],
-      () => store.dispatch(ContentActions.FETCH_CHECKLIST, checklistId),
+      [checklistId, inProgressId],
+      () => {
+        inProgressId.value &&
+          store.dispatch(ContentActions.FETCH_CHECKLIST, {
+            checklistId: inProgressId.value,
+            collection: 'in_progress'
+          });
+        store.dispatch(ContentActions.FETCH_CHECKLIST, {
+          checklistId: checklistId.value
+        });
+      },
       { immediate: true }
     );
 
-    const checklist = computed(
-      () => store.state.content.checklists.byId[checklistId]
+    const inProgress = computed(
+      () =>
+        inProgressId.value &&
+        store.state.content.inProgress.byId[inProgressId.value]
     );
+    const checklist = computed(() => ({
+      ...store.state.content.checklists.byId[checklistId.value],
+      ...inProgress.value
+    }));
     const category = computed(() =>
       checklist.value
         ? store.state.content.categories.byId[checklist.value.category]
         : undefined
+    );
+    const items = computed(
+      () =>
+        store.state.content.itemsByChecklist.byId[
+          inProgressId.value || checklistId.value
+        ]
     );
     const user = computed(() => store.state.app.user);
 
     return {
       checklist,
       category,
-      user
+      user,
+      items,
+      inProgressId
     };
   }
 });

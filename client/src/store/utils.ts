@@ -1,3 +1,5 @@
+import { ByIdMap } from './modules/content/state';
+
 export const createModuleActions = <T>(base: string, actions: T) =>
   Object.values(actions).reduce(
     (a, c) => ({ ...a, [c]: `${base}/${c}` }),
@@ -11,7 +13,5 @@ export const convertDocIn = <T = any>(
 };
 
 export const convertListToByIdMap = <T extends { id: string }>(list: T[]) => {
-  return list.reduce((a, c) => ({ ...a, [c.id]: c }), {}) as {
-    [key: string]: T;
-  };
+  return list.reduce((a, c) => ({ ...a, [c.id]: c }), {}) as ByIdMap<T>;
 };
