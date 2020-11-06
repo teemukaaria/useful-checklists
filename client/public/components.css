@@ -26,9 +26,10 @@
 }
 
 .pimple {
-  height: var(--height, --font-size-large);
-  width: var(--width, --font-size-large);
+  height: var(--height, var(--font-size-large));
+  width: var(--width, var(--font-size-large));
   border-radius: 100%;
+  flex-shrink: 0;
   /* make sure --color is defined */
   background: var(--color);
 }
@@ -47,22 +48,4 @@
 .typography--body {
   font-size: var(--font-size-small);
   opacity: 0.75;
-}
-
-.text-field {
-  background: none;
-  color: var(--color-text);
-  border-style: none;
-  border-bottom: 1px solid var(--color-background-grey);
-}
-
-.text-area {
-  background: var(--color-background-grey);
-  color: var(--color-text);
-  width: 100%;
-  resize: none;
-  min-height: 6em;
-  border: none;
-  border-radius: var(--spacing-0-5);
-  padding: var(--spacing-0-5);
 }

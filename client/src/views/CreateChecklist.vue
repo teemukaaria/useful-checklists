@@ -1,20 +1,28 @@
 <template>
-  <div class="page">
-    <checklist-settings/>
+  <div class="page" :style="{ '--color': color }">
+    <checklist-settings />
     <div class="items" v-if="items.length">
-      <checklist-item v-for="item in items" v-bind:key="item.id" :item="item" :color="color"/>
+      <checklist-item v-for="item in items" v-bind:key="item.id" :item="item" />
     </div>
-    <primary-button :style="{ '--color': color, 'margin-left': 'auto', 'margin-right': 'auto', 'margin-top': 'var(--spacing-2-5)' }" v-on:click="add">+ add an item</primary-button>
+    <primary-button
+      :style="{
+        'margin-left': 'auto',
+        'margin-right': 'auto',
+        'margin-top': 'var(--spacing-2-5)'
+      }"
+      v-on:click="add"
+      >+ add an item</primary-button
+    >
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, watch } from 'vue';
+import { computed, defineComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useStore, EditActions } from '@/store';
+import { useStore, EditActions, ContentActions } from '@/store';
 import ChecklistSettings from '@/components/creation/ChecklistSettings.vue';
 import ChecklistItem from '@/components/creation/ChecklistItem.vue';
-import PrimaryButton from '@/components/general/PrimaryButton.vue'
+import PrimaryButton from '@/components/general/PrimaryButton.vue';
 import { EditItem } from '@/store/modules/edit/state';
 
 export default defineComponent({
@@ -25,12 +33,20 @@ export default defineComponent({
     PrimaryButton
   },
   setup() {
-
+    const store = useStore();
     const { query } = useRoute();
     const category = query.category as string;
     const copy = query.copy as string;
 
-    const store = useStore();
+    watch(
+      [copy],
+      () => {
+        if (copy)
+          store.dispatch(ContentActions.FETCH_CHECKLIST, { checklistId: copy });
+      },
+      { immediate: true }
+    );
+
     const items = computed(() => Object.values(store.state.edit.editItemsById));
     const color = computed(() => {
       const c = store.state.content.categories.byId[store.state.edit.category];
@@ -43,12 +59,12 @@ export default defineComponent({
     });
 
     function add() {
-      const count = Object.values(store.state.edit.editItemsById).length
+      const count = Object.values(store.state.edit.editItemsById).length;
 
       const item: EditItem = {
         id: Date.now().toString(),
         order: count
-      }
+      };
 
       store.dispatch(EditActions.ADD_ITEM, item);
     }
@@ -58,13 +74,20 @@ export default defineComponent({
     watch(
       [checklists, categories],
       () => {
-        if (categories.value.status === 'done' && checklists.value.status === 'done' && copy && store.state.content.checklists.byId[copy]) {
+        if (
+          categories.value.status === 'done' &&
+          checklists.value.status === 'done' &&
+          copy &&
+          store.state.content.checklists.byId[copy]
+        ) {
           const checklist = store.state.content.checklists.byId[copy];
+          const checklistItems =
+            store.state.content.itemsByChecklist.byId[copy];
 
           const editItems: EditItem[] = [];
 
-          if (checklist.items) {
-            for (let item of checklist.items) {
+          if (checklistItems) {
+            for (const item of Object.values(checklistItems)) {
               editItems.push({
                 id: item.id,
                 name: item.name,
@@ -80,17 +103,18 @@ export default defineComponent({
           store.dispatch(EditActions.SET_PRIVATE, true);
           store.dispatch(EditActions.SET_ITEMS, editItems);
           store.dispatch(EditActions.SET_ORIGINAL, copy);
-
         } else if (categories.value.status === 'done') {
-          
           if (category && store.state.content.categories.byId[category]) {
             store.dispatch(EditActions.SET_CATEGORY, category);
           } else {
-            store.dispatch(EditActions.SET_CATEGORY, Object.values(store.state.content.categories.byId)[0].id);
+            store.dispatch(
+              EditActions.SET_CATEGORY,
+              Object.values(store.state.content.categories.byId)[0].id
+            );
           }
 
-          store.dispatch(EditActions.SET_TITLE, "");
-          store.dispatch(EditActions.SET_DESCRIPTION, "");
+          store.dispatch(EditActions.SET_TITLE, '');
+          store.dispatch(EditActions.SET_DESCRIPTION, '');
           store.dispatch(EditActions.SET_PRIVATE, false);
           store.dispatch(EditActions.SET_ITEMS, []);
         }
@@ -102,7 +126,7 @@ export default defineComponent({
       color,
       items,
       add
-    }
+    };
   }
 });
 </script>

@@ -123,13 +123,13 @@ export default defineComponent({
                   displayName: signupForm.name
                 })
                 .then(() => {
-
                   const user = convertUserIn({
-                      ...data.user,
-                      displayName: signupForm.name
-                  } as firebase.User)
+                    ...data.user,
+                    displayName: signupForm.name
+                  } as firebase.User);
 
-                  firebase.firestore()
+                  firebase
+                    .firestore()
                     .collection('users')
                     .doc(user.id)
                     .set({
@@ -141,7 +141,8 @@ export default defineComponent({
                       notifications: {
                         suggestions: true
                       }
-                    }).then(() => {
+                    })
+                    .then(() => {
                       store.dispatch(UserActions.LOGIN, user);
                       router.replace('/');
                     });

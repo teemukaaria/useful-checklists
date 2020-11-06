@@ -17,10 +17,7 @@ enum MutationTypes {
 export const Mutations = createModuleActions('EDIT', MutationTypes);
 
 export type Mutations = {
-  [Mutations.NEW_ITEM](
-    state: State,
-    payload: EditItem
-  ): void;
+  [Mutations.NEW_ITEM](state: State, payload: EditItem): void;
   [Mutations.EDIT_TITLE](
     state: State,
     payload: { item: EditItem; title?: string }
@@ -29,34 +26,13 @@ export type Mutations = {
     state: State,
     payload: { item: EditItem; description?: string }
   ): void;
-  [Mutations.REMOVE_ITEM](
-    state: State,
-    payload: EditItem
-  ): void;
-  [Mutations.SET_TITLE](
-    state: State,
-    payload: string
-  ): void;
-  [Mutations.SET_DESCRIPTION](
-    state: State,
-    payload: string
-  ): void;
-  [Mutations.SET_CATEGORY](
-    state: State,
-    payload: string
-  ): void;
-  [Mutations.SET_PRIVATE](
-    state: State,
-    payload: boolean
-  ): void;
-  [Mutations.SET_ITEMS](
-    state: State,
-    items: EditItem[]
-  ): void;
-  [Mutations.SET_ORIGINAL](
-    state: State,
-    original?: string
-  ): void;
+  [Mutations.REMOVE_ITEM](state: State, payload: EditItem): void;
+  [Mutations.SET_TITLE](state: State, payload: string): void;
+  [Mutations.SET_DESCRIPTION](state: State, payload: string): void;
+  [Mutations.SET_CATEGORY](state: State, payload: string): void;
+  [Mutations.SET_PRIVATE](state: State, payload: boolean): void;
+  [Mutations.SET_ITEMS](state: State, items: EditItem[]): void;
+  [Mutations.SET_ORIGINAL](state: State, original?: string): void;
 };
 
 export default {
@@ -71,7 +47,7 @@ export default {
   },
   [Mutations.REMOVE_ITEM]: (state, payload) => {
     delete state.editItemsById[payload.id];
-    for (let item of Object.values(state.editItemsById)) {
+    for (const item of Object.values(state.editItemsById)) {
       if (item.order > payload.order) {
         item.order--;
       }
@@ -90,13 +66,13 @@ export default {
     state.private = payload;
   },
   [Mutations.SET_ITEMS]: (state, items) => {
-    state.editItemsById = {}
+    state.editItemsById = {};
 
-    for (let item of items) {
+    for (const item of items) {
       state.editItemsById[item.id] = item;
     }
   },
   [Mutations.SET_ORIGINAL]: (state, payload) => {
     state.original = payload;
-  },
+  }
 } as Mutations;

@@ -1,9 +1,7 @@
 import { ActionTree, ActionContext } from 'vuex';
 import firebase from 'firebase';
 
-import {
-  createModuleActions
-} from '@/store/utils';
+import { createModuleActions } from '@/store/utils';
 import { State, EditItem } from './state';
 import { CombinedState } from '@/store';
 import { Mutations } from './mutations';
@@ -31,10 +29,7 @@ enum ActionTypes {
 export const Actions = createModuleActions('EDIT', ActionTypes);
 
 export interface ActionsInterface {
-  [Actions.ADD_ITEM](
-    context: AugmentedActionContext,
-    item: EditItem
-  ): void;
+  [Actions.ADD_ITEM](context: AugmentedActionContext, item: EditItem): void;
   [Actions.EDIT_TITLE](
     context: AugmentedActionContext,
     payload: { item: EditItem; title?: string }
@@ -43,14 +38,8 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload: { item: EditItem; description?: string }
   ): void;
-  [Actions.REMOVE_ITEM](
-    context: AugmentedActionContext,
-    item: EditItem
-  ): void;
-  [Actions.SET_TITLE](
-    context: AugmentedActionContext,
-    payload: string
-  ): void;
+  [Actions.REMOVE_ITEM](context: AugmentedActionContext, item: EditItem): void;
+  [Actions.SET_TITLE](context: AugmentedActionContext, payload: string): void;
   [Actions.SET_DESCRIPTION](
     context: AugmentedActionContext,
     payload: string
@@ -69,7 +58,7 @@ export interface ActionsInterface {
   ): void;
   [Actions.SET_ORIGINAL](
     context: AugmentedActionContext,
-    payload?: string 
+    payload?: string
   ): void;
 }
 
