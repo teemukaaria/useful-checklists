@@ -26,6 +26,7 @@ import {
   ByIdMap
 } from '@/store/modules/content/state';
 import { useStore, ContentActions } from '@/store';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   components: {
@@ -36,9 +37,6 @@ export default defineComponent({
     items: {
       type: Object as () => ByIdMap<IChecklistItem>,
       default: undefined
-    },
-    beforeMarkItem: {
-      type: Function
     },
     checklistId: {
       type: String,
@@ -51,6 +49,7 @@ export default defineComponent({
   },
   setup(props) {
     const store = useStore();
+    const router = useRouter();
     const localItems = ref(props.items);
 
     watchEffect(() => (localItems.value = props.items));
@@ -60,13 +59,17 @@ export default defineComponent({
         ...localItems.value,
         [id]: { ...localItems.value[id], done }
       };
-      props.beforeMarkItem && (await props.beforeMarkItem());
-      store.dispatch(ContentActions.MARK_ITEM, {
-        checklistId: props.checklistId,
-        inProgressId: props.inProgressId,
-        itemId: id,
-        done
-      });
+      store
+        .dispatch(ContentActions.MARK_ITEM, {
+          checklistId: props.checklistId,
+          inProgressId: props.inProgressId,
+          itemId: id,
+          done
+        })
+        .then(newId => {
+          if (!props.inProgressId && newId)
+            router.replace(`/checklist/${props.checklistId}/${newId}`);
+        });
     };
 
     const orderedItems = computed(() =>

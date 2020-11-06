@@ -1,6 +1,8 @@
-<template v-if="user !== undefined">
-  <app-bar />
-  <router-view />
+<template>
+  <template v-if="user !== undefined">
+    <app-bar />
+    <router-view />
+  </template>
 </template>
 
 <script lang="ts">

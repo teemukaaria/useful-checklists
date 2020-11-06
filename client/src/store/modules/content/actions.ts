@@ -24,6 +24,8 @@ type AugmentedActionContext = {
   ): ReturnType<ActionsInterface[K]>;
 } & Omit<ActionContext<State, CombinedState>, 'commit' | 'dispatch'>;
 
+export const TEMP_IN_PROGRESS_ID = 'temp';
+
 enum ActionTypes {
   FETCH_CATEGORIES = 'FETCH_CATEGORIES',
   FETCH_IN_PROGRESS = 'FETCH_IN_PROGRESS',
@@ -49,7 +51,7 @@ export interface ActionsInterface {
   ): void;
   [Actions.FETCH_CHECKLIST](
     context: AugmentedActionContext,
-    checklistId: string
+    payload: { checklistId: string; collection?: 'checklists' | 'in_progress' }
   ): void;
   [Actions.START_CHECKLIST](
     context: AugmentedActionContext,
@@ -63,7 +65,7 @@ export interface ActionsInterface {
       itemId: string;
       done: boolean;
     }
-  ): void;
+  ): Promise<string>;
 }
 
 export default {
@@ -148,62 +150,49 @@ export default {
     });
   },
 
-  async [Actions.FETCH_CHECKLIST]({ commit }, checklistId: string) {
-    commit(Mutations.SET_LOADING, 'checklists');
+  async [Actions.FETCH_CHECKLIST](
+    { commit },
+    { checklistId, collection = 'checklists' }
+  ) {
+    if (!checklistId) return;
+    commit(
+      Mutations.SET_LOADING,
+      collection === 'checklists' ? 'checklists' : 'inProgress'
+    );
     commit(Mutations.SET_LOADING, 'itemsByChecklist');
 
-    const user = firebase.auth().currentUser;
-    const checklistsRef = firebase.firestore().collection('checklists');
+    const checklistRef = firebase
+      .firestore()
+      .collection(collection)
+      .doc(checklistId);
+    const checklist: Checklist = await checklistRef.get().then(convertDocIn);
+    const checklistItems: ChecklistItem[] = await checklistRef
+      .collection('items')
+      .orderBy('order')
+      .get()
+      .then(snap => snap.docs.map(convertDocIn));
 
-    async function getLists() {
-      const publicChecklist = checklistsRef
-        .where(firebase.firestore.FieldPath.documentId(), '==', checklistId)
-        .where('private', '==', false)
-        .get();
-      const userChecklist = checklistsRef
-        .where(firebase.firestore.FieldPath.documentId(), '==', checklistId)
-        .where('owner', '==', user?.uid || '')
-        .get();
-
-      const [publicChecklists, userChecklists] = await Promise.all([
-        publicChecklist,
-        userChecklist
-      ]);
-
-      const publicChecklistsArray = publicChecklists.docs;
-      const userChecklistsArray = userChecklists.docs;
-
-      return publicChecklistsArray.concat(userChecklistsArray);
-    }
-
-    const lists = await getLists();
-    const list = lists && lists[0];
-    const checklist: Checklist = convertDocIn(list);
-    const checklistRef = list?.ref;
-
-    const checklistItems: ChecklistItem[] =
-      checklistRef &&
-      (await checklistRef
-        .collection('items')
-        .orderBy('order')
-        .get()
-        .then(snap => snap.docs.map(convertDocIn)));
     commit(Mutations.ADD_CONTENT, {
       key: 'itemsByChecklist',
       content: { [checklist.id]: convertListToByIdMap(checklistItems) }
     });
     commit(Mutations.ADD_CONTENT, {
-      key: 'checklists',
+      key: collection === 'checklists' ? 'checklists' : 'inProgress',
       content: { [checklist.id]: checklist }
     });
   },
 
-  async [Actions.START_CHECKLIST]({ commit, state, rootState }, checklistId) {
+  async [Actions.START_CHECKLIST](
+    { commit, dispatch, state, rootState },
+    checklistId
+  ) {
     const checklist = state.checklists.byId[checklistId];
     const items = state.itemsByChecklist.byId[checklistId];
     const user = rootState.app.user;
     if (!user || !checklist || !items)
       throw Error('Not necessary data available');
+
+    // Copy the checklist to in progress
     const createdRef = await firebase
       .firestore()
       .collection('in_progress')
@@ -222,21 +211,80 @@ export default {
         [createdRef.id]: convertDocIn<InProgress>(await createdRef.get())
       }
     });
+
+    // Get items that have been checked while creating the in progress object
+    const tempItems = state.itemsByChecklist.byId[TEMP_IN_PROGRESS_ID];
+    // Update local state
     commit(Mutations.ADD_CONTENT, {
       key: 'itemsByChecklist',
-      content: { [createdRef.id]: items }
+      content: {
+        [createdRef.id]: tempItems
+      }
+    });
+    // Dispatch mark actions so that the server state will also be updated
+    Object.values(tempItems).forEach(
+      item =>
+        item.done &&
+        dispatch(Actions.MARK_ITEM, {
+          inProgressId: createdRef.id,
+          checklistId,
+          itemId: item.id,
+          done: item.done
+        })
+    );
+    // Clean up the temp in progress
+    commit(Mutations.REMOVE_CONTENT, {
+      key: 'inProgress',
+      contentId: TEMP_IN_PROGRESS_ID
+    });
+    commit(Mutations.REMOVE_CONTENT, {
+      key: 'itemsByChecklist',
+      contentId: TEMP_IN_PROGRESS_ID
     });
     return createdRef.id;
   },
 
   async [Actions.MARK_ITEM](
-    { commit, dispatch },
+    { commit, dispatch, state },
     { checklistId, inProgressId, itemId, done }
   ) {
+    // If we haven't yet created the in progress list, start creating and return
+    // In progress creation will mark the checked items when completed
     if (!inProgressId) {
-      inProgressId = await dispatch(ActionTypes.START_CHECKLIST, checklistId);
-      useRouter().replace(`checklist/${checklistId}/${inProgressId}`);
+      // The temp in progress list contains the info of the list to be created
+      // If it doesn't exist, create local temp object and dispatch creation, otherwise just update the local state
+      // The temp object will be updated to the server once the object has been created
+      if (!state.inProgress.byId[TEMP_IN_PROGRESS_ID]) {
+        const checklist = state.checklists.byId[checklistId];
+        const checklistItems = state.itemsByChecklist.byId[checklistId];
+        commit(Mutations.ADD_CONTENT, {
+          key: 'inProgress',
+          content: {
+            [TEMP_IN_PROGRESS_ID]: { ...checklist, id: TEMP_IN_PROGRESS_ID }
+          }
+        });
+        commit(Mutations.ADD_CONTENT, {
+          key: 'itemsByChecklist',
+          content: {
+            [TEMP_IN_PROGRESS_ID]: {
+              ...checklistItems,
+              [itemId]: { ...checklistItems[itemId], done }
+            }
+          }
+        });
+        return await dispatch(Actions.START_CHECKLIST, checklistId);
+      } else {
+        const tempItems = state.itemsByChecklist.byId[TEMP_IN_PROGRESS_ID];
+        commit(Mutations.ADD_INNER_CONTENT, {
+          key: 'itemsByChecklist',
+          contentId: TEMP_IN_PROGRESS_ID,
+          innerContent: { [itemId]: { ...tempItems[itemId], done } }
+        });
+      }
+      return;
     }
+
+    // We have the id of the in progress list so it has been already created locally and on the server
     const itemRef = firebase
       .firestore()
       .collection('in_progress')
@@ -249,5 +297,6 @@ export default {
       contentId: inProgressId,
       innerContent: { [itemRef.id]: await itemRef.get().then(convertDocIn) }
     });
+    return inProgressId;
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

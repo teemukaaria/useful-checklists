@@ -57,6 +57,7 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .wrapper {
+  overflow-x: auto;
   display: flex;
   padding: 5px;
   margin: -5px;

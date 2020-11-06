@@ -10,8 +10,8 @@
     </div>
     <item-list
       :items="items"
-      :beforeMarkItem="beforeMarkItem"
-      :checklistId="checklist.id"
+      :checklistId="checklist?.id"
+      :inProgressId="inProgressId"
     />
     <div
       class="suggest-wrapper"
@@ -30,8 +30,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch, computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { defineComponent, watch, computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { useStore, ContentActions } from '@/store';
 import HeaderCard from '@/components/checklist/HeaderCard.vue';
@@ -49,19 +49,23 @@ export default defineComponent({
     PrimaryButton
   },
   setup() {
-    const { params } = useRoute();
-    const router = useRouter();
+    const route = useRoute();
     const store = useStore();
 
-    const checklistId = params.id as string;
-    const inProgressId = ref(params.inProgress as string | undefined);
+    const checklistId = computed(() => route.params.id as string);
+    const inProgressId = computed(() => route.params.inProgress as string);
 
     watch(
       [checklistId, inProgressId],
       () => {
-        if (inProgressId.value) return;
-        // store.dispatch(ContentActions.FETCH_IN_PROGRESS_BY_ID, checklistId.value);
-        store.dispatch(ContentActions.FETCH_CHECKLIST, checklistId);
+        inProgressId.value &&
+          store.dispatch(ContentActions.FETCH_CHECKLIST, {
+            checklistId: inProgressId.value,
+            collection: 'in_progress'
+          });
+        store.dispatch(ContentActions.FETCH_CHECKLIST, {
+          checklistId: checklistId.value
+        });
       },
       { immediate: true }
     );
@@ -71,9 +75,10 @@ export default defineComponent({
         inProgressId.value &&
         store.state.content.inProgress.byId[inProgressId.value]
     );
-    const checklist = computed(
-      () => store.state.content.checklists.byId[checklistId]
-    );
+    const checklist = computed(() => ({
+      ...store.state.content.checklists.byId[checklistId.value],
+      ...inProgress.value
+    }));
     const category = computed(() =>
       checklist.value
         ? store.state.content.categories.byId[checklist.value.category]
@@ -82,28 +87,17 @@ export default defineComponent({
     const items = computed(
       () =>
         store.state.content.itemsByChecklist.byId[
-          inProgressId.value || checklistId
+          inProgressId.value || checklistId.value
         ]
     );
     const user = computed(() => store.state.app.user);
-
-    const beforeMarkItem = async () => {
-      if (!inProgress.value) {
-        const createdId = await store.dispatch(
-          ContentActions.START_CHECKLIST,
-          checklistId
-        );
-        router.replace(`/checklist/${checklistId}/${createdId}`);
-        inProgressId.value = createdId;
-      }
-    };
 
     return {
       checklist,
       category,
       user,
       items,
-      beforeMarkItem
+      inProgressId
     };
   }
 });

@@ -6,7 +6,8 @@ enum MutationTypes {
   SET_ERROR = 'SET_ERROR',
   SET_LOADING = 'SET_LOADING',
   ADD_CONTENT = 'ADD_CONTENT',
-  ADD_INNER_CONTENT = 'ADD_INNER_CONTENT'
+  ADD_INNER_CONTENT = 'ADD_INNER_CONTENT',
+  REMOVE_CONTENT = 'REMOVE_CONTENT'
 }
 
 export const Mutations = createModuleActions('CONTENT', MutationTypes);
@@ -38,6 +39,10 @@ export type Mutations = {
       contentId: string;
       innerContent: InnerContent<T>;
     }
+  ): void;
+  [Mutations.REMOVE_CONTENT]<T extends keyof State>(
+    state: State,
+    payload: { key: T; contentId: string }
   ): void;
 };
 
@@ -82,6 +87,12 @@ export default {
           ...innerContent
         }
       }
+    };
+  },
+  [Mutations.REMOVE_CONTENT]: (state, { key, contentId }) => {
+    state[key] = {
+      ...state[key],
+      byId: { ...state[key].byId, [contentId]: undefined }
     };
   }
 } as Mutations;
