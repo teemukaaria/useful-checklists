@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="{ 'checklist-item-wrapper': true, done: done }"
+    :class="{ 'checklist-item-wrapper': true, done, [modification]: true }"
     role="checkbox"
     :aria-checked="done"
     tabindex="0"
@@ -10,7 +10,10 @@
   >
     <checkbox class="checkbox" :modelValue="done" static />
     <div class="text-wrapper">
-      <h6>{{ item.name }}</h6>
+      <div class="title-row">
+        <h6>{{ item.name }}</h6>
+        <span class="modification" />
+      </div>
       <p class="typography--body" v-if="item.description">
         {{ item.description }}
       </p>
@@ -33,6 +36,10 @@ export default defineComponent({
     item: {
       type: Object as () => ChecklistItem,
       required: true
+    },
+    modification: {
+      type: String,
+      default: undefined
     }
   },
   setup(props, { emit }) {
@@ -66,17 +73,38 @@ export default defineComponent({
     margin: var(--spacing-1) var(--spacing-1-5) var(--spacing-1) 0;
   }
 
+  .title-row {
+    display: flex;
+    align-items: baseline;
+  }
+
   p {
     margin-top: var(--spacing-1);
   }
 
-  &.done {
+  &.done,
+  &.delete {
     h6,
     p {
       transition: opacity 0.2s;
       opacity: 0.5;
       text-decoration: line-through;
     }
+  }
+
+  .modification::after {
+    color: var(--color);
+    margin-left: var(--spacing-1);
+    font-size: var(--font-size-small);
+  }
+  &.delete .modification::after {
+    content: 'Removed';
+  }
+  &.update .modification::after {
+    content: 'Modified';
+  }
+  &.create .modification::after {
+    content: 'New';
   }
 }
 </style>
