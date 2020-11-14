@@ -23,7 +23,8 @@ enum ActionTypes {
   SET_CATEGORY = 'SET_CATEGORY',
   SET_PRIVATE = 'SET_PRIVATE',
   SET_ITEMS = 'SET_ITEMS',
-  SET_ORIGINAL = 'SET_ORIGINAL'
+  SET_ORIGINAL = 'SET_ORIGINAL',
+  PUBLISH = 'PUBLISH'
 }
 
 export const Actions = createModuleActions('EDIT', ActionTypes);
@@ -60,6 +61,7 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload?: string
   ): void;
+  [Actions.PUBLISH](context: AugmentedActionContext): Promise<string>;
 }
 
 export default {
@@ -92,5 +94,38 @@ export default {
   },
   async [Actions.SET_ORIGINAL]({ commit }, original) {
     commit(Mutations.SET_ORIGINAL, original);
+  },
+
+  async [Actions.PUBLISH]({ state, rootState }) {
+    const items = Object.values(state.editItemsById);
+    const user = rootState.app.user;
+    if (!user) return;
+
+    const doc = await firebase
+      .firestore()
+      .collection('checklists')
+      .add({
+        name: state.title,
+        category: state.category,
+        description: state.description,
+        item_count: items.length,
+        owner: user.id,
+        collaborators: [],
+        likes: 0,
+        private: state.private,
+        original: state.original ? state.original : ''
+      });
+
+    const batch = firebase.firestore().batch();
+    items.forEach(item =>
+      batch.set(doc.collection('items').doc(), {
+        name: item.name ? item.name : '',
+        description: item.description ? item.description : '',
+        order: item.order || 999
+      })
+    );
+
+    await batch.commit();
+    return doc.id;
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

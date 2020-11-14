@@ -1,6 +1,6 @@
 <template>
   <div class="page" :style="{ '--color': color }">
-    <checklist-settings />
+    <checklist-settings :copy="!!copy" />
     <div class="items" v-if="items.length">
       <checklist-item v-for="item in items" v-bind:key="item.id" :item="item" />
     </div>
@@ -34,15 +34,17 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    const { query } = useRoute();
-    const category = query.category as string;
-    const copy = query.copy as string;
+    const route = useRoute();
+    const category = computed(() => route.query.category as string);
+    const copy = computed(() => route.query.copy as string);
 
     watch(
       [copy],
       () => {
-        if (copy)
-          store.dispatch(ContentActions.FETCH_CHECKLIST, { checklistId: copy });
+        if (copy.value)
+          store.dispatch(ContentActions.FETCH_CHECKLIST, {
+            checklistId: copy.value
+          });
       },
       { immediate: true }
     );
@@ -72,17 +74,17 @@ export default defineComponent({
     const checklists = computed(() => store.state.content.checklists);
     const categories = computed(() => store.state.content.categories);
     watch(
-      [checklists, categories],
+      [copy, checklists, categories],
       () => {
         if (
           categories.value.status === 'done' &&
           checklists.value.status === 'done' &&
-          copy &&
-          store.state.content.checklists.byId[copy]
+          copy.value &&
+          store.state.content.checklists.byId[copy.value]
         ) {
-          const checklist = store.state.content.checklists.byId[copy];
+          const checklist = store.state.content.checklists.byId[copy.value];
           const checklistItems =
-            store.state.content.itemsByChecklist.byId[copy];
+            store.state.content.itemsByChecklist.byId[copy.value];
 
           const editItems: EditItem[] = [];
 
@@ -102,10 +104,13 @@ export default defineComponent({
           store.dispatch(EditActions.SET_DESCRIPTION, checklist.description);
           store.dispatch(EditActions.SET_PRIVATE, true);
           store.dispatch(EditActions.SET_ITEMS, editItems);
-          store.dispatch(EditActions.SET_ORIGINAL, copy);
+          store.dispatch(EditActions.SET_ORIGINAL, copy.value);
         } else if (categories.value.status === 'done') {
-          if (category && store.state.content.categories.byId[category]) {
-            store.dispatch(EditActions.SET_CATEGORY, category);
+          if (
+            category.value &&
+            store.state.content.categories.byId[category.value]
+          ) {
+            store.dispatch(EditActions.SET_CATEGORY, category.value);
           } else {
             store.dispatch(
               EditActions.SET_CATEGORY,
@@ -125,7 +130,8 @@ export default defineComponent({
     return {
       color,
       items,
-      add
+      add,
+      copy
     };
   }
 });

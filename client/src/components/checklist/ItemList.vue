@@ -20,7 +20,7 @@
 import { defineComponent, ref, watchEffect, computed } from 'vue';
 
 import ChecklistItem from './ChecklistItem.vue';
-import SkeletonChecklistItem from './SkeletonChecklistItem.vue';
+import SkeletonChecklistItem from '@/components/common/SkeletonChecklistItem.vue';
 import {
   ChecklistItem as IChecklistItem,
   ByIdMap

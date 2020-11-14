@@ -10,7 +10,6 @@ import { State, Category, InProgress, Checklist, ChecklistItem } from './state';
 import { CombinedState } from '@/store';
 import { Mutations } from './mutations';
 import { convertChecklistToInProgress } from './utils';
-import { useRouter } from 'vue-router';
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -168,7 +167,6 @@ export default {
     const checklist: Checklist = await checklistRef.get().then(convertDocIn);
     const checklistItems: ChecklistItem[] = await checklistRef
       .collection('items')
-      .orderBy('order')
       .get()
       .then(snap => snap.docs.map(convertDocIn));
 

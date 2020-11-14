@@ -24,41 +24,67 @@
       </span>
     </form-field>
     <text-area id="description" label="Description" v-model="description" />
-    <form-field id="" label="Status">
+    <form-field id="" :label="copy ? 'Use' : 'Status'">
       <span class="row">
-        <input
-          type="radio"
-          id="private"
-          name="status"
-          value="private"
-          v-model="status"
-        />
-        <div class="radiobox" />
-        <label for="private" class="radio-label">Private</label>
-        <span class="space" />
-        <input
-          type="radio"
-          id="public"
-          name="status"
-          value="public"
-          v-model="status"
-        />
-        <div class="radiobox" />
-        <label for="public" class="radio-label">Public</label>
+        <span class="radio-field">
+          <input
+            type="radio"
+            id="private"
+            name="status"
+            value="private"
+            v-model="use"
+          />
+          <div class="radiobox" />
+          <label for="private" class="radio-label">
+            {{ copy ? 'Create a private copy' : 'Private' }}
+          </label>
+        </span>
+        <span class="radio-field">
+          <input
+            type="radio"
+            id="public"
+            name="status"
+            value="public"
+            v-model="use"
+          />
+          <div class="radiobox" />
+          <label for="public" class="radio-label">
+            {{ copy ? 'Publish a copy' : 'Public' }}
+          </label>
+        </span>
+        <span class="radio-field" v-if="copy">
+          <input
+            type="radio"
+            id="suggestion"
+            name="status"
+            value="suggestion"
+            v-model="use"
+          />
+          <div class="radiobox" />
+          <label for="suggestion" class="radio-label">Suggest an edit</label>
+        </span>
       </span>
     </form-field>
     <span class="button-row">
       <secondary-button v-on:click="cancel">cancel</secondary-button>
       <div class="panel">
         <span class="items-label">{{ itemCount }} items</span>
-        <primary-button v-on:click="create">create</primary-button>
+        <primary-button v-on:click="create">{{
+          use === 'private'
+            ? 'create'
+            : use === 'public'
+            ? 'publish'
+            : use === 'suggestion'
+            ? 'suggest'
+            : 'copy'
+        }}</primary-button>
       </div>
     </span>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 import { useStore, EditActions } from '@/store';
 import { useRouter } from 'vue-router';
 import PrimaryButton from '@/components/general/PrimaryButton.vue';
@@ -66,7 +92,6 @@ import TextInput from '@/components/general/TextInput.vue';
 import TextArea from '@/components/general/TextArea.vue';
 import FormField from '@/components/general/FormField.vue';
 import SecondaryButton from '@/components/general/SecondaryButton.vue';
-import firebase from 'firebase';
 
 export default defineComponent({
   name: 'ChecklistSettings',
@@ -76,6 +101,12 @@ export default defineComponent({
     TextInput,
     TextArea,
     FormField
+  },
+  props: {
+    copy: {
+      type: Boolean,
+      default: false
+    }
   },
   setup() {
     const router = useRouter();
@@ -111,46 +142,22 @@ export default defineComponent({
       get: () => (store.state.edit.private ? 'private' : 'public'),
       set: text => store.dispatch(EditActions.SET_PRIVATE, text === 'private')
     });
+    const useRef = ref<'private' | 'public' | 'suggestion'>('private');
+    const use = computed({
+      get: () => useRef.value,
+      set: text => {
+        useRef.value = text;
+        store.dispatch(EditActions.SET_PRIVATE, text === 'private');
+      }
+    });
 
     async function create() {
-      const items = Object.values(store.state.edit.editItemsById);
-
-      const res = await firebase
-        .firestore()
-        .collection('checklists')
-        .add({
-          name: store.state.edit.title,
-          category: store.state.edit.category,
-          description: store.state.edit.description,
-          item_count: items.length,
-          owner: store.state.app.user ? store.state.app.user.id : '',
-          collaborators: [],
-          likes: 0,
-          private: store.state.edit.private,
-          original: store.state.edit.original ? store.state.edit.original : ''
-        })
-        .then(document => {
-          const db = firebase.firestore();
-          const batch = db.batch();
-
-          items.forEach(item => {
-            const docRef = document.collection('items').add({});
-            batch.set(docRef, {
-              name: item.name ? item.name : '',
-              description: item.description ? item.description : '',
-              order: item.order
-            });
-          });
-
-          batch.commit().then(
-            value => {
-              router.replace('/checklist/' + document.id);
-            },
-            reason => {
-              alert('Failed to create checklist items, reason: ' + reason);
-            }
-          );
-        });
+      if (use.value !== 'suggestion') {
+        const listId = await store.dispatch(EditActions.PUBLISH, undefined);
+        router.replace('/checklist/' + listId);
+      } else {
+        // TODO: create a suggestion
+      }
     }
 
     function cancel() {
@@ -166,7 +173,8 @@ export default defineComponent({
       itemCount,
       status,
       create,
-      cancel
+      cancel,
+      use
     };
   }
 });
@@ -210,13 +218,19 @@ export default defineComponent({
 }
 
 .row {
-  display: flex;
+  display: grid;
   align-items: center;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10px;
+
+  .radio-field {
+    display: flex;
+    align-items: center;
+  }
 
   .radio-label {
     color: var(--color-text);
     font-size: var(--font-size-small);
-    width: 100px;
     line-height: 1;
   }
 
