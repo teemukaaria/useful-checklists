@@ -1,7 +1,7 @@
 export interface EditItem {
   id: string;
-  name?: string;
-  description?: string;
+  name: string;
+  description: string;
   order: number;
 }
 
@@ -15,9 +15,9 @@ export interface State {
 }
 
 export default {
-  title: "",
-  category: "",
-  description: "",
+  title: '',
+  category: '',
+  description: '',
   private: false,
   original: undefined,
   editItemsById: {}

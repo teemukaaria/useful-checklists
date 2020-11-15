@@ -1,6 +1,6 @@
 <template>
   <div class="page" :style="{ '--color': color }">
-    <checklist-settings :copy="!!copy" />
+    <checklist-settings :copy="!!copy" :original="original" />
     <div class="items" v-if="items.length">
       <checklist-item v-for="item in items" v-bind:key="item.id" :item="item" />
     </div>
@@ -37,6 +37,9 @@ export default defineComponent({
     const route = useRoute();
     const category = computed(() => route.query.category as string);
     const copy = computed(() => route.query.copy as string);
+    const original = computed(() =>
+      copy.value ? store.state.content.checklists.byId[copy.value] : undefined
+    );
 
     watch(
       [copy],
@@ -65,6 +68,8 @@ export default defineComponent({
 
       const item: EditItem = {
         id: Date.now().toString(),
+        name: '',
+        description: '',
         order: count
       };
 
@@ -131,7 +136,8 @@ export default defineComponent({
       color,
       items,
       add,
-      copy
+      copy,
+      original
     };
   }
 });

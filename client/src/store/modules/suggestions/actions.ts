@@ -9,6 +9,7 @@ import {
 import { State, Suggestion, SuggestionChange } from './state';
 import { CombinedState, ContentActions } from '@/store';
 import { Mutations } from './mutations';
+import { convertChangeIn } from './utils';
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -72,7 +73,7 @@ export default {
     const changes: SuggestionChange[] = await suggestionRef
       .collection('changes')
       .get()
-      .then(snap => snap.docs.map(convertDocIn));
+      .then(snap => snap.docs.map(doc => convertChangeIn(convertDocIn(doc))));
 
     commit(Mutations.ADD_CONTENT, {
       key: 'suggestions',
@@ -120,7 +121,8 @@ export default {
       else {
         const itemRef = checklistRef.collection('items').doc(change.id);
         if (change.type === 'delete') batch.delete(itemRef);
-        if (change.type === 'create') batch.set(itemRef, change.new);
+        if (change.type === 'create')
+          batch.set(checklistRef.collection('items').doc(), change.new);
         if (change.type === 'update') batch.update(itemRef, change.new);
       }
     });

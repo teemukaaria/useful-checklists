@@ -20,11 +20,11 @@ export type Mutations = {
   [Mutations.NEW_ITEM](state: State, payload: EditItem): void;
   [Mutations.EDIT_TITLE](
     state: State,
-    payload: { item: EditItem; title?: string }
+    payload: { item: EditItem; title: string }
   ): void;
   [Mutations.EDIT_DESCRIPTION](
     state: State,
-    payload: { item: EditItem; description?: string }
+    payload: { item: EditItem; description: string }
   ): void;
   [Mutations.REMOVE_ITEM](state: State, payload: EditItem): void;
   [Mutations.SET_TITLE](state: State, payload: string): void;

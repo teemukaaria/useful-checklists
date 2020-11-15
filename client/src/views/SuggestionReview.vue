@@ -3,7 +3,7 @@
     <div class="header">
       <template v-if="checklist">
         <suggestion-header
-          :checklist="checklist"
+          :checklist="changes[checklist.id]?.new || checklist"
           :modified="changes && !!changes[checklist.id]"
           @reject="rejectSuggestions"
           @approve="approveSuggestions"
@@ -84,10 +84,10 @@ export default defineComponent({
           store.state.content.itemsByChecklist.byId[checklistId.value]
         )
     );
-    const category = computed(
-      () =>
-        checklist.value?.category &&
-        store.state.content.categories.byId[checklist.value.category]
+    const category = computed(() =>
+      checklist.value?.category
+        ? store.state.content.categories.byId[checklist.value.category]
+        : undefined
     );
 
     watch(
