@@ -9,6 +9,8 @@ import {
 import { State, Suggestion, SuggestionChange } from './state';
 import { CombinedState, ContentActions } from '@/store';
 import { Mutations } from './mutations';
+import { Mutations as AppMutations } from '../app/mutations';
+import { convertChangeIn } from './utils';
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -26,7 +28,8 @@ enum ActionTypes {
   FETCH_SUGGESTIONS = 'FETCH_SUGGESTIONS',
   FETCH_SUGGESTION = 'FETCH_SUGGESTION',
   REJECT = 'REJECT',
-  VALIDATE_ALL = 'VALIDATE_ALL'
+  VALIDATE_ALL = 'VALIDATE_ALL',
+  LIKE_CHECKLIST = 'LIKE_CHECKLIST'
 }
 
 export const Actions = createModuleActions('SUGGESTIONS', ActionTypes);
@@ -39,6 +42,10 @@ export interface ActionsInterface {
   [Actions.FETCH_SUGGESTION](context: AugmentedActionContext, id: string): void;
   [Actions.REJECT](context: AugmentedActionContext, id: string): void;
   [Actions.VALIDATE_ALL](context: AugmentedActionContext, id: string): void;
+  [Actions.LIKE_CHECKLIST](
+    context: AugmentedActionContext,
+    payload: { checklistId: string; like: boolean }
+  ): void;
 }
 
 export default {
@@ -72,7 +79,7 @@ export default {
     const changes: SuggestionChange[] = await suggestionRef
       .collection('changes')
       .get()
-      .then(snap => snap.docs.map(convertDocIn));
+      .then(snap => snap.docs.map(doc => convertChangeIn(convertDocIn(doc))));
 
     commit(Mutations.ADD_CONTENT, {
       key: 'suggestions',
@@ -113,6 +120,9 @@ export default {
 
     // Make changes to the checklist
     const checklistRef = db.doc(`checklists/${suggestion.checklist.id}`);
+    checklistRef.update({
+      collaborators: firebase.firestore.FieldValue.arrayUnion(suggestion.user)
+    });
     const batch = db.batch();
     changes.forEach(change => {
       if (change.id === suggestion.checklist.id)
@@ -120,13 +130,42 @@ export default {
       else {
         const itemRef = checklistRef.collection('items').doc(change.id);
         if (change.type === 'delete') batch.delete(itemRef);
-        if (change.type === 'create') batch.set(itemRef, change.new);
+        if (change.type === 'create')
+          batch.set(checklistRef.collection('items').doc(), change.new);
         if (change.type === 'update') batch.update(itemRef, change.new);
       }
     });
     await batch.commit();
     (dispatch as any)(ContentActions.FETCH_CHECKLIST, {
       checklistId: suggestion.checklist.id
+    });
+  },
+
+  [Actions.LIKE_CHECKLIST]: async (
+    { commit, rootState, dispatch },
+    { checklistId, like }
+  ) => {
+    const user = rootState.app.user;
+    const checklist = rootState.content.checklists.byId[checklistId];
+    if (!user || !checklist) return;
+
+    const db = firebase.firestore();
+    (commit as any)(AppMutations.LIKE_CHECKLIST, { checklistId, like });
+    db.collection('users')
+      .doc(user.id)
+      .update({
+        liked: like
+          ? firebase.firestore.FieldValue.arrayUnion(checklistId)
+          : firebase.firestore.FieldValue.arrayRemove(checklistId)
+      });
+
+    await firebase.functions().httpsCallable('likeChecklist')({
+      checklistId,
+      like
+    });
+
+    (dispatch as any)(ContentActions.FETCH_CHECKLIST, {
+      checklistId: checklistId
     });
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

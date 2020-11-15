@@ -13,17 +13,24 @@
       :checklistId="checklist?.id"
       :inProgressId="inProgressId"
     />
-    <div
-      class="suggest-wrapper"
-      v-if="
-        checklist && user && !checklist.private && checklist.owner !== user.id
-      "
-    >
-      <primary-button class="suggest-button" variant="text">
-        <plus-icon /><span>suggest a modification</span>
+    <div class="suggest-wrapper">
+      <primary-button
+        @click="handleSuggClick"
+        class="suggest-button"
+        variant="text"
+      >
+        <plus-icon /><span
+          v-if="checklist && user && checklist.owner === user.id"
+          >make a modification</span
+        ><span v-else>suggest a modification</span>
       </primary-button>
       <p class="typography--body">
-        The checklist seems uncomplete? Copy it and suggest a modification.
+        <template v-if="checklist && user && checklist.owner === user.id">
+          Make a suggestion, which will be automatically approved.
+        </template>
+        <template v-else>
+          The checklist seems uncomplete? Copy it and suggest a modification.
+        </template>
       </p>
     </div>
   </div>
@@ -31,7 +38,7 @@
 
 <script lang="ts">
 import { defineComponent, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { useStore, ContentActions } from '@/store';
 import HeaderCard from '@/components/checklist/HeaderCard.vue';
@@ -50,6 +57,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const store = useStore();
 
     const checklistId = computed(() => route.params.id as string);
@@ -91,12 +99,20 @@ export default defineComponent({
     );
     const user = computed(() => store.state.app.user);
 
+    const handleSuggClick = () => {
+      router.push({
+        path: `/checklist/create`,
+        query: { copy: checklist.value.id, suggestion: 'true' }
+      });
+    };
+
     return {
       checklist,
       category,
       user,
       items,
-      inProgressId
+      inProgressId,
+      handleSuggClick
     };
   }
 });

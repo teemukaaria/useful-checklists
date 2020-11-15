@@ -12,6 +12,7 @@ export interface Suggestion {
 export interface DeleteChange {
   id: string;
   type: 'delete';
+  new: undefined;
 }
 export interface UpdateChange {
   id: string;

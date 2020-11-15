@@ -31,7 +31,8 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/checklist/create',
     name: 'ChecklistCreate',
-    component: () => import('../views/CreateChecklist.vue')
+    component: () => import('../views/CreateChecklist.vue'),
+    props: route => ({ copy: route.query.copy })
   },
   {
     path: '/review/:id',

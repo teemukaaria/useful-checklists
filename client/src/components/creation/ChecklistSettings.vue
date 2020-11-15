@@ -4,7 +4,7 @@
       <h4>Create a checklist</h4>
     </span>
     <text-input id="title" label="Title" v-model="title" />
-    <form-field id="category" label="Category">
+    <form-field id="category" label="Category" v-if="!copy">
       <span class="select" style="width: 65%">
         <div class="pimple" />
         <select
@@ -39,7 +39,7 @@
             {{ copy ? 'Create a private copy' : 'Private' }}
           </label>
         </span>
-        <span class="radio-field">
+        <span class="radio-field" v-if="!copy">
           <input
             type="radio"
             id="public"
@@ -61,7 +61,9 @@
             v-model="use"
           />
           <div class="radiobox" />
-          <label for="suggestion" class="radio-label">Suggest an edit</label>
+          <label for="suggestion" class="radio-label">{{
+            owner ? 'Make an edit' : 'Suggest an edit'
+          }}</label>
         </span>
       </span>
     </form-field>
@@ -75,7 +77,9 @@
             : use === 'public'
             ? 'publish'
             : use === 'suggestion'
-            ? 'suggest'
+            ? owner
+              ? 'edit'
+              : 'suggest'
             : 'copy'
         }}</primary-button>
       </div>
@@ -85,13 +89,14 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue';
-import { useStore, EditActions } from '@/store';
-import { useRouter } from 'vue-router';
+import { useStore, EditActions, SuggestionActions } from '@/store';
+import { useRouter, useRoute } from 'vue-router';
 import PrimaryButton from '@/components/general/PrimaryButton.vue';
 import TextInput from '@/components/general/TextInput.vue';
 import TextArea from '@/components/general/TextArea.vue';
 import FormField from '@/components/general/FormField.vue';
 import SecondaryButton from '@/components/general/SecondaryButton.vue';
+import { Checklist } from '@/store/modules/content/state';
 
 export default defineComponent({
   name: 'ChecklistSettings',
@@ -106,26 +111,39 @@ export default defineComponent({
     copy: {
       type: Boolean,
       default: false
+    },
+    original: {
+      type: Object as () => Checklist | undefined,
+      default: undefined
     }
   },
-  setup() {
+  setup(props) {
     const router = useRouter();
+    const route = useRoute();
     const store = useStore();
+
+    const user = computed(() => store.state.app.user);
+    const owner = computed(() => user.value?.id === props.original?.owner);
+
     const title = computed({
       get: () => store.state.edit.title,
       set: text => store.dispatch(EditActions.SET_TITLE, text)
     });
-    const color = computed(() => {
-      const c = store.state.content.categories.byId[store.state.edit.category];
-
-      if (c) {
-        return c.color;
-      } else {
-        return undefined;
+    const useRef = ref<'private' | 'public' | 'suggestion'>(
+      route.query.suggestion ? 'suggestion' : 'private'
+    );
+    const use = computed({
+      get: () => useRef.value,
+      set: text => {
+        useRef.value = text;
+        store.dispatch(EditActions.SET_PRIVATE, text === 'private');
       }
     });
     const category = computed({
-      get: () => store.state.edit.category,
+      get: () =>
+        use.value === 'suggestion' && props.original
+          ? props.original.category
+          : store.state.edit.category,
       set: text => store.dispatch(EditActions.SET_CATEGORY, text)
     });
     const description = computed({
@@ -142,21 +160,21 @@ export default defineComponent({
       get: () => (store.state.edit.private ? 'private' : 'public'),
       set: text => store.dispatch(EditActions.SET_PRIVATE, text === 'private')
     });
-    const useRef = ref<'private' | 'public' | 'suggestion'>('private');
-    const use = computed({
-      get: () => useRef.value,
-      set: text => {
-        useRef.value = text;
-        store.dispatch(EditActions.SET_PRIVATE, text === 'private');
-      }
-    });
 
     async function create() {
       if (use.value !== 'suggestion') {
         const listId = await store.dispatch(EditActions.PUBLISH, undefined);
         router.replace('/checklist/' + listId);
       } else {
-        // TODO: create a suggestion
+        const suggId = await store.dispatch(
+          EditActions.SUGGEST_EDIT,
+          props.original?.id || ''
+        );
+        if (owner.value) {
+          await store.dispatch(SuggestionActions.FETCH_SUGGESTION, suggId);
+          await store.dispatch(SuggestionActions.VALIDATE_ALL, suggId);
+        }
+        router.back();
       }
     }
 
@@ -166,7 +184,6 @@ export default defineComponent({
 
     return {
       title,
-      color,
       category,
       description,
       categories,
@@ -174,7 +191,8 @@ export default defineComponent({
       status,
       create,
       cancel,
-      use
+      use,
+      owner
     };
   }
 });
