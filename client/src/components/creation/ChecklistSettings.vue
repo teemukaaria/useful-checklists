@@ -61,7 +61,9 @@
             v-model="use"
           />
           <div class="radiobox" />
-          <label for="suggestion" class="radio-label">Suggest an edit</label>
+          <label for="suggestion" class="radio-label">{{
+            owner ? 'Make an edit' : 'Suggest an edit'
+          }}</label>
         </span>
       </span>
     </form-field>
@@ -75,7 +77,9 @@
             : use === 'public'
             ? 'publish'
             : use === 'suggestion'
-            ? 'suggest'
+            ? owner
+              ? 'edit'
+              : 'suggest'
             : 'copy'
         }}</primary-button>
       </div>
@@ -85,8 +89,8 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue';
-import { useStore, EditActions } from '@/store';
-import { useRouter } from 'vue-router';
+import { useStore, EditActions, SuggestionActions } from '@/store';
+import { useRouter, useRoute } from 'vue-router';
 import PrimaryButton from '@/components/general/PrimaryButton.vue';
 import TextInput from '@/components/general/TextInput.vue';
 import TextArea from '@/components/general/TextArea.vue';
@@ -115,12 +119,19 @@ export default defineComponent({
   },
   setup(props) {
     const router = useRouter();
+    const route = useRoute();
     const store = useStore();
+
+    const user = computed(() => store.state.app.user);
+    const owner = computed(() => user.value?.id === props.original?.owner);
+
     const title = computed({
       get: () => store.state.edit.title,
       set: text => store.dispatch(EditActions.SET_TITLE, text)
     });
-    const useRef = ref<'private' | 'public' | 'suggestion'>('private');
+    const useRef = ref<'private' | 'public' | 'suggestion'>(
+      route.query.suggestion ? 'suggestion' : 'private'
+    );
     const use = computed({
       get: () => useRef.value,
       set: text => {
@@ -155,10 +166,14 @@ export default defineComponent({
         const listId = await store.dispatch(EditActions.PUBLISH, undefined);
         router.replace('/checklist/' + listId);
       } else {
-        await store.dispatch(
+        const suggId = await store.dispatch(
           EditActions.SUGGEST_EDIT,
           props.original?.id || ''
         );
+        if (owner.value) {
+          await store.dispatch(SuggestionActions.FETCH_SUGGESTION, suggId);
+          await store.dispatch(SuggestionActions.VALIDATE_ALL, suggId);
+        }
         router.back();
       }
     }
@@ -176,7 +191,8 @@ export default defineComponent({
       status,
       create,
       cancel,
-      use
+      use,
+      owner
     };
   }
 });

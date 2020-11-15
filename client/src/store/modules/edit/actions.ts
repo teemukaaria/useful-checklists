@@ -67,7 +67,7 @@ export interface ActionsInterface {
   [Actions.SUGGEST_EDIT](
     context: AugmentedActionContext,
     originalId: string
-  ): void;
+  ): Promise<string>;
 }
 
 export default {
@@ -116,7 +116,7 @@ export default {
         description: state.description,
         item_count: items.length,
         owner: user.id,
-        collaborators: [],
+        collaborators: [user.id],
         likes: 0,
         private: state.private,
         original: state.original ? state.original : ''
@@ -205,5 +205,6 @@ export default {
       if (type === 'create') batch.set(changesRef.doc(), { type, new: item });
     }
     await batch.commit();
+    return suggestionRef.id;
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

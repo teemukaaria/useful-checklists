@@ -3,6 +3,9 @@ import * as admin from 'firebase-admin';
 admin.initializeApp();
 
 export * from './firestore/inProgress';
+export * from './firestore/checklists';
+export * from './firestore/categories';
+export * from './actions/checklists';
 
 
 // // Start writing Firebase Functions

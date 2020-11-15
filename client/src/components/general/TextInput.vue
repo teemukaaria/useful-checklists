@@ -1,6 +1,12 @@
 <template>
   <form-field :id="id" :label="label">
-    <input type="text" :id="id" :value="modelValue" @input="handleChange" />
+    <input
+      :type="type"
+      :id="id"
+      :value="modelValue"
+      @input="handleChange"
+      v-bind="$attrs"
+    />
   </form-field>
 </template>
 
@@ -14,7 +20,8 @@ export default defineComponent({
   },
   props: {
     modelValue: {
-      type: String
+      type: String,
+      default: ''
     },
     id: {
       type: String,
@@ -23,6 +30,10 @@ export default defineComponent({
     label: {
       type: String,
       default: undefined
+    },
+    type: {
+      type: String,
+      default: 'text'
     }
   },
   setup(props, { emit }) {
@@ -38,7 +49,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-input[type='text'] {
+input {
   background: none;
   color: var(--color-text);
   border-style: none;

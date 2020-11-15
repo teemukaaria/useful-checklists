@@ -32,13 +32,21 @@ export default defineComponent({
     ChecklistItem,
     PrimaryButton
   },
-  setup() {
+  props: {
+    copy: String
+  },
+  setup(props) {
     const store = useStore();
     const route = useRoute();
     const category = computed(() => route.query.category as string);
-    const copy = computed(() => route.query.copy as string);
+    const copy = computed(() => props.copy);
     const original = computed(() =>
       copy.value ? store.state.content.checklists.byId[copy.value] : undefined
+    );
+    const originalItems = computed(() =>
+      copy.value
+        ? store.state.content.itemsByChecklist.byId[copy.value]
+        : undefined
     );
 
     watch(
@@ -79,13 +87,13 @@ export default defineComponent({
     const checklists = computed(() => store.state.content.checklists);
     const categories = computed(() => store.state.content.categories);
     watch(
-      [copy, checklists, categories],
+      [copy, original, originalItems, categories],
       () => {
         if (
-          categories.value.status === 'done' &&
-          checklists.value.status === 'done' &&
           copy.value &&
-          store.state.content.checklists.byId[copy.value]
+          original.value &&
+          categories.value &&
+          originalItems.value
         ) {
           const checklist = store.state.content.checklists.byId[copy.value];
           const checklistItems =
@@ -110,7 +118,7 @@ export default defineComponent({
           store.dispatch(EditActions.SET_PRIVATE, true);
           store.dispatch(EditActions.SET_ITEMS, editItems);
           store.dispatch(EditActions.SET_ORIGINAL, copy.value);
-        } else if (categories.value.status === 'done') {
+        } else if (!copy.value) {
           if (
             category.value &&
             store.state.content.categories.byId[category.value]
@@ -136,7 +144,6 @@ export default defineComponent({
       color,
       items,
       add,
-      copy,
       original
     };
   }

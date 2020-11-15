@@ -2,21 +2,30 @@
   <div class="checklist-header card" v-if="checklist">
     <div class="bar">
       <h2>{{ checklist.name }}</h2>
-      <p class="contributors">
+      <p v-if="!checklist.private" class="contributors">
         {{ checklist.collaborators.length }} contributors
+      </p>
+      <p v-else class="contributors">
+        Private
       </p>
     </div>
     <p class="typography--body desc" v-if="checklist.description">
       {{ checklist.description }}
     </p>
     <div class="bar">
-      <primary-button class="button--like" variant="text">
-        <like-icon /><span>{{ checklist.likes }}</span>
+      <primary-button
+        @click="handleLikeClick"
+        class="button--like"
+        variant="text"
+      >
+        <like-icon v-if="!liked" /><like-full-icon v-else /><span>{{
+          checklist.likes
+        }}</span>
       </primary-button>
       <div class="bar">
-        <primary-button class="button--bookmark">
+        <!-- <primary-button class="button--bookmark">
           <bookmark-icon />
-        </primary-button>
+        </primary-button> -->
         <router-link :to="`/checklist/create?copy=${checklist.id}`">
           <primary-button>
             copy
@@ -28,18 +37,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 
 import { Checklist } from '@/store/modules/content/state';
 import PrimaryButton from '@/components/general/PrimaryButton.vue';
 import LikeIcon from '@/assets/icons/LikeIcon.vue';
+import LikeFullIcon from '@/assets/icons/LikeFullIcon.vue';
 import BookmarkIcon from '@/assets/icons/BookmarkIcon.vue';
+import { useStore, SuggestionActions } from '@/store';
 
 export default defineComponent({
   components: {
     PrimaryButton,
     LikeIcon,
-    BookmarkIcon
+    LikeFullIcon
+    // BookmarkIcon
   },
   props: {
     checklist: {
@@ -47,7 +59,26 @@ export default defineComponent({
       required: true
     }
   },
-  setup() {}
+  setup(props) {
+    const store = useStore();
+
+    const user = computed(() => store.state.app.user);
+    const liked = computed(() =>
+      (user.value?.liked || []).includes(props.checklist.id)
+    );
+
+    const handleLikeClick = () => {
+      store.dispatch(SuggestionActions.LIKE_CHECKLIST, {
+        checklistId: props.checklist.id,
+        like: !liked.value
+      });
+    };
+
+    return {
+      liked,
+      handleLikeClick
+    };
+  }
 });
 </script>
 
@@ -67,6 +98,7 @@ export default defineComponent({
     .contributors {
       font-size: var(--font-size-small);
       opacity: 0.5;
+      white-space: nowrap;
     }
   }
 
