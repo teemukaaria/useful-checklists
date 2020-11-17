@@ -76,7 +76,7 @@ export default {
   },
   [Mutations.SET_ORIGINAL]: (state, payload) => {
     state.original = payload;
-  }
+  },
   [Mutations.RESET]: (state) => {
     state.title = "";
     state.category = "";
