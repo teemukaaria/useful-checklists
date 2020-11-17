@@ -19,7 +19,8 @@ export const getContentfulMutations = <S>(base: string) => {
     SET_LOADING = 'SET_LOADING',
     ADD_CONTENT = 'ADD_CONTENT',
     ADD_INNER_CONTENT = 'ADD_INNER_CONTENT',
-    REMOVE_CONTENT = 'REMOVE_CONTENT'
+    REMOVE_CONTENT = 'REMOVE_CONTENT',
+    RESET = 'RESET'
   }
 
   const Mutations = createModuleActions(base, MutationTypes);
@@ -62,6 +63,7 @@ export const getContentfulMutations = <S>(base: string) => {
       state: State,
       payload: { key: T; contentId: string }
     ): void;
+    [Mutations.RESET](state: State, key: keyof State): void;
   };
 
   const mutations = {
@@ -115,6 +117,9 @@ export const getContentfulMutations = <S>(base: string) => {
         ...state[key],
         byId: { ...state[key].byId, [contentId]: undefined }
       };
+    },
+    [Mutations.RESET]: (state, key) => {
+      state[key] = { byId: {}, numOfLoading: 0 } as any
     }
   } as IMutations;
 

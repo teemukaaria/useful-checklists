@@ -29,7 +29,8 @@ enum ActionTypes {
   FETCH_SUGGESTION = 'FETCH_SUGGESTION',
   REJECT = 'REJECT',
   VALIDATE_ALL = 'VALIDATE_ALL',
-  LIKE_CHECKLIST = 'LIKE_CHECKLIST'
+  LIKE_CHECKLIST = 'LIKE_CHECKLIST',
+  RESET = 'RESET'
 }
 
 export const Actions = createModuleActions('SUGGESTIONS', ActionTypes);
@@ -46,6 +47,7 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload: { checklistId: string; like: boolean }
   ): void;
+  [Actions.RESET](context: AugmentedActionContext): void;
 }
 
 export default {
@@ -167,5 +169,9 @@ export default {
     (dispatch as any)(ContentActions.FETCH_CHECKLIST, {
       checklistId: checklistId
     });
+  },
+  async [Actions.RESET]({ commit }) {
+    commit(Mutations.RESET, 'suggestions');
+    commit(Mutations.RESET, 'changesBySuggestion');
   }
 } as ActionTree<State, CombinedState> & ActionsInterface;

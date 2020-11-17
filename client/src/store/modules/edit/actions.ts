@@ -26,7 +26,8 @@ enum ActionTypes {
   SET_ITEMS = 'SET_ITEMS',
   SET_ORIGINAL = 'SET_ORIGINAL',
   PUBLISH = 'PUBLISH',
-  SUGGEST_EDIT = 'SUGGEST_EDIT'
+  SUGGEST_EDIT = 'SUGGEST_EDIT',
+  RESET = 'RESET'
 }
 
 export const Actions = createModuleActions('EDIT', ActionTypes);
@@ -63,6 +64,7 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload?: string
   ): void;
+  [Actions.RESET](context: AugmentedActionContext): void;
   [Actions.PUBLISH](context: AugmentedActionContext): Promise<string>;
   [Actions.SUGGEST_EDIT](
     context: AugmentedActionContext,
@@ -206,5 +208,8 @@ export default {
     }
     await batch.commit();
     return suggestionRef.id;
-  }
+  },
+  async [Actions.RESET]({ commit }) {
+    commit(Mutations.RESET, undefined);
+  },
 } as ActionTree<State, CombinedState> & ActionsInterface;

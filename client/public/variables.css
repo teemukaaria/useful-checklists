@@ -5,6 +5,8 @@ body {
   --color-background-card: #1f1f1f;
   --color-background-grey: #2f2f2f;
   --color-blue:  #15A9FF;
+  --color-orange: #FF4C29;
+  --color-green: #00BE9E;
 
   /* FONTS */
   --font-size-xsmall: 12px;

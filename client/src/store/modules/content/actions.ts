@@ -28,11 +28,13 @@ export const TEMP_IN_PROGRESS_ID = 'temp';
 enum ActionTypes {
   FETCH_CATEGORIES = 'FETCH_CATEGORIES',
   FETCH_IN_PROGRESS = 'FETCH_IN_PROGRESS',
+  FETCH_CHECKLISTS_FOR_CURRENT_USER = 'FETCH_CHECKLISTS_FOR_CURRENT_USER',
   FETCH_CATEGORY_BY_ID = 'FETCH_CATEGORY_BY_ID',
   FETCH_CHECKLISTS_FOR_CATEGORY = 'FETCH_CHECKLISTS_FOR_CATEGORY',
   FETCH_CHECKLIST = 'FETCH_CHECKLIST',
   START_CHECKLIST = 'START_CHECKLIST',
-  MARK_ITEM = 'MARK_ITEM'
+  MARK_ITEM = 'MARK_ITEM',
+  RESET = 'RESET'
 }
 
 export const Actions = createModuleActions('CONTENT', ActionTypes);
@@ -48,6 +50,7 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     category: string
   ): void;
+  [Actions.FETCH_CHECKLISTS_FOR_CURRENT_USER](context: AugmentedActionContext): void;
   [Actions.FETCH_CHECKLIST](
     context: AugmentedActionContext,
     payload: { checklistId: string; collection?: 'checklists' | 'in_progress' }
@@ -65,6 +68,7 @@ export interface ActionsInterface {
       done: boolean;
     }
   ): Promise<string>;
+  [Actions.RESET](context: AugmentedActionContext): void;
 }
 
 export default {
@@ -147,6 +151,34 @@ export default {
       key: 'checklistsByCategory',
       content: { [category]: Object.keys(checklists) }
     });
+  },
+
+  async [Actions.FETCH_CHECKLISTS_FOR_CURRENT_USER]({ commit }) {
+    commit(Mutations.SET_LOADING, 'checklists');
+    commit(Mutations.SET_LOADING, 'checklistsForCurrentUser');
+
+    const user = firebase.auth().currentUser;
+    const checklistsRef = firebase.firestore().collection('checklists');
+
+    async function getAvailableChecklists() {
+      const isUser = checklistsRef
+        .where('owner', '==', user?.uid || '')
+        .get();
+
+      const [userChecklists] = await Promise.all([
+        isUser
+      ]);
+
+      const userChecklistsArray = userChecklists.docs.map(convertDocIn);
+
+      return userChecklistsArray;
+    }
+
+    const checklists = await getAvailableChecklists()
+      .then(snap => snap as Checklist[])
+      .then(convertListToByIdMap);
+    commit(Mutations.ADD_CONTENT, { key: 'checklists', content: checklists });
+    commit(Mutations.ADD_CONTENT, { key: 'checklistsForCurrentUser', content: checklists });
   },
 
   async [Actions.FETCH_CHECKLIST](
@@ -296,5 +328,12 @@ export default {
       innerContent: { [itemRef.id]: await itemRef.get().then(convertDocIn) }
     });
     return inProgressId;
-  }
+  },
+  async [Actions.RESET]({ commit }) {
+    commit(Mutations.RESET, 'inProgress');
+    commit(Mutations.RESET, 'checklists');
+    commit(Mutations.RESET, 'checklistsByCategory');
+    commit(Mutations.RESET, 'itemsByChecklist');
+    commit(Mutations.RESET, 'checklistsForCurrentUser');
+  },
 } as ActionTree<State, CombinedState> & ActionsInterface;
