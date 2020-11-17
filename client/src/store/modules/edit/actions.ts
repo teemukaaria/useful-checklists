@@ -24,7 +24,8 @@ enum ActionTypes {
   SET_PRIVATE = 'SET_PRIVATE',
   SET_ITEMS = 'SET_ITEMS',
   SET_ORIGINAL = 'SET_ORIGINAL',
-  PUBLISH = 'PUBLISH'
+  PUBLISH = 'PUBLISH',
+  RESET = 'RESET'
 }
 
 export const Actions = createModuleActions('EDIT', ActionTypes);
@@ -61,6 +62,7 @@ export interface ActionsInterface {
     context: AugmentedActionContext,
     payload?: string
   ): void;
+  [Actions.RESET](context: AugmentedActionContext): void;
   [Actions.PUBLISH](context: AugmentedActionContext): Promise<string>;
 }
 
@@ -127,5 +129,8 @@ export default {
 
     await batch.commit();
     return doc.id;
-  }
+  },
+  async [Actions.RESET]({ commit }) {
+    commit(Mutations.RESET, undefined);
+  },
 } as ActionTree<State, CombinedState> & ActionsInterface;

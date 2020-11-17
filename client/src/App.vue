@@ -8,9 +8,8 @@
 <script lang="ts">
 import { defineComponent, computed, onMounted } from 'vue';
 import firebase from 'firebase';
-
 import AppBar from '@/components/app/AppBar.vue';
-import { useStore, UserActions, ContentActions } from './store';
+import { useStore, UserActions, ContentActions, EditActions, SuggestionActions } from './store';
 import { convertUserIn } from './utils/store.utils';
 
 export default defineComponent({
@@ -24,8 +23,15 @@ export default defineComponent({
     onMounted(() => {
       // Check if the user is already logged in
       const unsub = firebase.auth().onAuthStateChanged(user => {
-        if (user) store.dispatch(UserActions.LOGIN, convertUserIn(user));
-        else store.dispatch(UserActions.LOGOUT, undefined);
+        if (user) {
+          store.dispatch(UserActions.LOGIN, convertUserIn(user));
+        }
+        else {
+          store.dispatch(UserActions.LOGOUT, undefined);
+          store.dispatch(ContentActions.RESET, undefined);
+          store.dispatch(EditActions.RESET, undefined);
+          store.dispatch(SuggestionActions.RESET, undefined);
+        }
         unsub();
       });
 

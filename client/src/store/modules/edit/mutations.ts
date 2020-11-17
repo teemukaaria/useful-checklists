@@ -11,7 +11,8 @@ enum MutationTypes {
   SET_CATEGORY = 'SET_CATEGORY',
   SET_PRIVATE = 'SET_PRIVATE',
   SET_ITEMS = 'SET_ITEMS',
-  SET_ORIGINAL = 'SET_ORIGINAL'
+  SET_ORIGINAL = 'SET_ORIGINAL',
+  RESET = 'RESET'
 }
 
 export const Mutations = createModuleActions('EDIT', MutationTypes);
@@ -33,6 +34,7 @@ export type Mutations = {
   [Mutations.SET_PRIVATE](state: State, payload: boolean): void;
   [Mutations.SET_ITEMS](state: State, items: EditItem[]): void;
   [Mutations.SET_ORIGINAL](state: State, original?: string): void;
+  [Mutations.RESET](state: State): void;
 };
 
 export default {
@@ -74,5 +76,13 @@ export default {
   },
   [Mutations.SET_ORIGINAL]: (state, payload) => {
     state.original = payload;
+  }
+  [Mutations.RESET]: (state) => {
+    state.title = "";
+    state.category = "";
+    state.description = "";
+    state.private = false;
+    state.original = undefined;
+    state.editItemsById = {};
   }
 } as Mutations;

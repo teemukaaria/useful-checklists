@@ -56,6 +56,7 @@ export interface State {
   checklists: Content<Checklist>;
   checklistsByCategory: Content<string[]>;
   itemsByChecklist: Content<ByIdMap<ChecklistItem>>;
+  checklistsForCurrentUser: Content<Checklist>;
 }
 
 export default {
@@ -63,5 +64,6 @@ export default {
   inProgress: { byId: {}, numOfLoading: 0 },
   checklists: { byId: {}, numOfLoading: 0 },
   checklistsByCategory: { byId: {}, numOfLoading: 0 },
-  itemsByChecklist: { byId: {}, numOfLoading: 0 }
+  itemsByChecklist: { byId: {}, numOfLoading: 0 },
+  checklistsForCurrentUser: { byId: {}, numOfLoading: 0 }
 } as State;

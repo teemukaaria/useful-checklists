@@ -34,6 +34,16 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/CreateChecklist.vue')
   },
   {
+    path: '/mylists',
+    name: 'MyChecklists',
+    component: () => import('../views/MyChecklists.vue')
+  },
+  {
+    path: '/review',
+    name: 'Suggestions',
+    component: () => import('../views/Suggestions.vue')
+  },
+  {
     path: '/review/:id',
     name: 'SuggestionReview',
     component: () => import('../views/SuggestionReview.vue')
