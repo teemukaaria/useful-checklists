@@ -3,7 +3,11 @@
     <h6>{{ suggestion.checklist.name }}</h6>
     <p class="typography--body">{{ suggestion.checklist.description }}</p>
     <router-link :to="`/review/${suggestion.id}`">
-        <primary-button class="examine-button" :style="{ '--color': 'var(--color-blue)' }">examine suggestion</primary-button>
+      <primary-button
+        class="examine-button"
+        :style="{ '--color': 'var(--color-blue)' }"
+        >examine suggestion</primary-button
+      >
     </router-link>
   </div>
 </template>
@@ -11,7 +15,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Suggestion } from '@/store/modules/suggestions/state';
-import PrimaryButton from '@/components/general/PrimaryButton.vue'
+import PrimaryButton from '@/components/general/PrimaryButton.vue';
 
 export default defineComponent({
   name: 'ChecklistCard',
@@ -22,7 +26,7 @@ export default defineComponent({
     }
   },
   components: {
-      PrimaryButton
+    PrimaryButton
   }
 });
 </script>
@@ -43,8 +47,7 @@ export default defineComponent({
   }
 
   .examine-button {
-      margin-left: auto;
+    margin-left: auto;
   }
-
 }
 </style>

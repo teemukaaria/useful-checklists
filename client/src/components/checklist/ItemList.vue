@@ -66,7 +66,7 @@ export default defineComponent({
           itemId: id,
           done
         })
-        .then(newId => {
+        .then((newId: string) => {
           if (!props.inProgressId && newId)
             router.replace(`/checklist/${props.checklistId}/${newId}`);
         });
