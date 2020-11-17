@@ -1,10 +1,6 @@
 <template>
-  <div>
-    <profile-icon
-      class="center"
-      style="width: 200px; height: 200px; margin-top: var(--spacing-4);"
-      :image="user?.image"
-    />
+  <div class="page profile">
+    <profile-icon class="center profile-icon" :image="user?.image" />
     <p v-if="user" class="center name">{{ user.name }}</p>
     <p v-if="date" class="center date">Member since {{ date }}</p>
     <div class="action-buttons">
@@ -31,7 +27,7 @@
       v-if="user"
       class="center logout"
       @click="handleLogoutClick"
-      :style="{ '--color': 'var(--color-orange)' }"
+      :style="{ '--color': 'var(--color-text)' }"
       >Logout</primary-button
     >
   </div>
@@ -88,11 +84,11 @@ export default defineComponent({
     };
 
     const handleMyChecklistsClick = () => {
-      router.replace('/mylists');
+      router.push('/mylists');
     };
 
     const handleSuggestionsClick = () => {
-      router.replace('/review');
+      router.push('/review');
     };
 
     const handleSignUpClick = () => {
@@ -112,6 +108,18 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.profile {
+  .profile-icon {
+    width: 200px;
+    height: 200px;
+    margin-top: var(--spacing-4);
+    border-radius: 100%;
+    padding: 0;
+    border: 4px solid var(--color-text);
+    margin-bottom: var(--spacing-2);
+  }
+}
+
 .vertical-flex {
   display: flex;
   flex-direction: column;
@@ -125,11 +133,13 @@ export default defineComponent({
 
 .name {
   font-size: var(--font-size-large);
+  margin-bottom: var(--spacing-0-5);
 }
 
 .date {
   font-size: var(--font-size-small);
   opacity: 50%;
+  margin-bottom: var(--spacing-4);
 }
 
 .logout {
@@ -137,7 +147,7 @@ export default defineComponent({
 }
 
 .spacing {
-  margin-top: var(--spacing-1-5);
+  margin-top: var(--spacing-2);
 }
 
 .action-buttons {

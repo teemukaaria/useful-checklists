@@ -6,7 +6,10 @@
         :key="checklist.id"
         :to="`/checklist/${checklist.id}`"
       >
-        <checklist-card :checklist="checklist" :color="color" />
+        <checklist-card
+          :checklist="checklist"
+          :color="categories[checklist.category]?.color || color"
+        />
       </router-link>
     </template>
     <template v-else>
@@ -18,11 +21,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 
 import ChecklistCard from './ChecklistCard.vue';
 import SkeletonCard from '@/components/common/SkeletonCard.vue';
 import { Checklist } from '@/store/modules/content/state';
+import { useStore } from '@/store';
 
 export default defineComponent({
   name: 'ChecklistCardList',
@@ -40,6 +44,15 @@ export default defineComponent({
       default: false
     },
     color: { type: String, default: 'white' }
+  },
+  setup() {
+    const store = useStore();
+
+    const categories = computed(() => store.state.content.categories.byId);
+
+    return {
+      categories
+    };
   }
 });
 </script>

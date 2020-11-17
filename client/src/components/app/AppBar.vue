@@ -10,7 +10,7 @@
         <add-checklist-icon class="icon" aria-label="add checklist" />
       </router-link>
       <router-link to="/profile">
-        <profile-icon :image="user.image" />
+        <profile-icon class="border" :image="user.image" />
       </router-link>
     </div>
   </header>
@@ -75,6 +75,12 @@ header {
         margin-right: var(--spacing-1-5);
       }
     }
+  }
+
+  .border {
+    border-radius: 100%;
+    padding: 0;
+    border: 2px solid var(--color-text);
   }
 }
 </style>
